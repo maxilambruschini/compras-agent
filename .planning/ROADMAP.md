@@ -46,7 +46,11 @@ Plans:
   3. A confidence score between 0.0 and 1.0 is produced for every extraction, derived from non-null critical fields and cross-field consistency
   4. The original invoice file is saved to the local filesystem via StorageBackend and the stored path is returned
   5. Processing errors (download failure, extraction failure) are captured and logged with the originating message reference
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 02-01-PLAN.md — Wave 0 tests + StorageBackend + ExtractionService skeleton + debug-gated /extraction/test router
+- [ ] 02-02-PLAN.md — SYSTEM_PROMPT constant + hardened error semantics + EXT-01..EXT-07 + VAL-04 + VAL-05 mocked tests + integration marker
+- [ ] 02-03-PLAN.md — calibrate_prompt.py (Claude Opus 4.7 ground truth + GPT-4o diff loop) + fixtures README + D-11 human done-gate
 
 ### Phase 3: WhatsApp Pipeline
 **Goal**: An allowlisted employee can send an invoice photo on WhatsApp and receive a reply; the invoice data is stored in the database within seconds
