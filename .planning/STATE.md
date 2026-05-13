@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 Phase: 2
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-05-13
+Last activity: 2026-05-13 - Completed quick task 260513-kwb: Phase 1 cleanup fixes (uv, CR-01/02/03, WR-01/03/05, is_active)
 
 Progress: [██████████] 100%
 
@@ -68,6 +68,12 @@ Recent decisions affecting current work:
 ### Pending Todos
 
 None yet.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260513-kwb | Fix Phase 1 cleanup: uv, CR-01/02/03, WR-01/03/05, is_active server_default | 2026-05-13 | 88a784c | [260513-kwb](./quick/260513-kwb-fix-phase-1-cleanup-items-before-phase-2/) |
 
 ### Blockers/Concerns
 
