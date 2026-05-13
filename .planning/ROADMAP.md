@@ -12,7 +12,7 @@ Four phases take the project from zero to a fully working WhatsApp invoice captu
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** - Docker Compose scaffold, Postgres schema, Pydantic models, environment wiring
+- [x] **Phase 1: Foundation** - Docker Compose scaffold, Postgres schema, Pydantic models, environment wiring (completed 2026-05-13)
 - [ ] **Phase 2: Extraction Pipeline** - GPT-4o vision extraction service, confidence scoring, storage, testable in isolation
 - [ ] **Phase 3: WhatsApp Pipeline** - End-to-end webhook receive → extract → store → reply
 - [ ] **Phase 4: Admin UI** - React admin interface for invoice list, detail, edit, search, and delete
@@ -30,7 +30,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. The allowlist table exists and can be seeded with employee phone numbers
   4. `ExtractedInvoice` Pydantic model and all supporting enums/types can be imported and instantiated without errors
   5. All secrets (OpenAI key, WhatsApp token, DB URL) are loaded from environment variables; the app refuses to start if required vars are missing
-**Plans**: TBD
+**Plans:** 2/2 plans complete
+Plans:
+- [ ] 01-PLAN-data-contract.md — Pydantic Settings + SQLAlchemy ORM schema + Alembic async scaffold + Wave 0 pytest suite (INF-01 schema, INF-03 fail-fast)
+- [ ] 01-PLAN-walking-skeleton.md — FastAPI app + GET /health + Vite/React scaffold + Dockerfiles + docker-compose.yml + human-verified end-to-end smoke
 
 ### Phase 2: Extraction Pipeline
 **Goal**: A developer can pass an invoice image to the ExtractionService and receive a structured, validated `ExtractedInvoice` with a confidence score — no WhatsApp required
@@ -81,7 +84,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/TBD | Not started | - |
+| 1. Foundation | 2/2 | Complete   | 2026-05-13 |
 | 2. Extraction Pipeline | 0/TBD | Not started | - |
 | 3. WhatsApp Pipeline | 0/TBD | Not started | - |
 | 4. Admin UI | 0/TBD | Not started | - |
