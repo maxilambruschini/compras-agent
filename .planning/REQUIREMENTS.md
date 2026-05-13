@@ -104,16 +104,38 @@ These are derived at query/display time:
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INF-01, INF-02, INF-03, INF-04 | Phase 1 | Pending |
-| EXT-01–07, VAL-01–05 | Phase 2 | Pending |
-| WA-01–04 | Phase 3 | Pending |
-| UI-01–07 | Phase 4–5 | Pending |
+| INF-01 | Phase 1 | Pending |
+| INF-03 | Phase 1 | Pending |
+| EXT-01 | Phase 2 | Pending |
+| EXT-02 | Phase 2 | Pending |
+| EXT-03 | Phase 2 | Pending |
+| EXT-04 | Phase 2 | Pending |
+| EXT-05 | Phase 2 | Pending |
+| EXT-06 | Phase 2 | Pending |
+| EXT-07 | Phase 2 | Pending |
+| VAL-04 | Phase 2 | Pending |
+| VAL-05 | Phase 2 | Pending |
+| WA-01 | Phase 3 | Pending |
+| WA-02 | Phase 3 | Pending |
+| WA-03 | Phase 3 | Pending |
+| WA-04 | Phase 3 | Pending |
+| VAL-01 | Phase 3 | Pending |
+| VAL-02 | Phase 3 | Pending |
+| VAL-03 | Phase 3 | Pending |
+| INF-02 | Phase 3 | Pending |
+| INF-04 | Phase 3 | Pending |
+| UI-01 | Phase 4 | Pending |
+| UI-02 | Phase 4 | Pending |
+| UI-03 | Phase 4 | Pending |
+| UI-04 | Phase 4 | Pending |
+| UI-05 | Phase 4 | Pending |
+| UI-06 | Phase 4 | Pending |
 
 **Coverage:**
-- v1 requirements: 22 total
-- Mapped to phases: 23
+- v1 requirements: 26 total (UI-07 deferred to v2)
+- Mapped to phases: 26
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-05-12*
-*Last updated: 2026-05-12 after initial definition*
+*Last updated: 2026-05-12 — traceability updated after roadmap creation*
