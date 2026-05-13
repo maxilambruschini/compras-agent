@@ -29,7 +29,7 @@
 - [ ] **VAL-01**: System detects duplicate submissions using numero_documento + proveedor; duplicate is flagged and not saved as a new record
 - [ ] **VAL-02**: Extractions below the confidence threshold are saved with status=pending_review and visually flagged in the admin UI
 - [ ] **VAL-03**: Extractions above the confidence threshold are saved with status=auto_saved
-- [ ] **VAL-04**: Original invoice image or PDF is stored in Supabase Storage linked to the database record
+- [ ] **VAL-04**: Original invoice image or PDF is stored on the local filesystem (via StorageBackend abstraction) and linked to the database record
 - [ ] **VAL-05**: Processing errors (download failure, extraction failure, validation failure) are logged with the WhatsApp message ID for diagnosis and retry
 
 ### Admin UI

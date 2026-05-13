@@ -51,9 +51,9 @@ An employee sends a photo of an invoice over WhatsApp and the data lands correct
 
 ## Constraints
 
-- **Tech Stack**: Python + FastAPI (backend), React + Vite (frontend), Supabase Postgres + Storage, OpenAI GPT-4o vision
+- **Tech Stack**: Python + FastAPI (backend), React + Vite (frontend), Postgres in Docker, local filesystem storage via FastAPI (`StorageBackend` abstraction), OpenAI GPT-4o vision
 - **WhatsApp**: Must use official Meta Cloud API or an official BSP (Twilio, 360dialog) — no unofficial scraping libraries
-- **Security**: Secrets in environment variables / Supabase vault. Webhook signatures validated. Original files retained for audit.
+- **Security**: Secrets in environment variables. Webhook signatures validated. Original files retained for audit.
 - **Argentine compliance**: Invoice fields follow AFIP schema conventions. No tax advice generated — extraction only.
 - **Scope**: Single-company deployment for v1. No multi-tenancy.
 
@@ -61,11 +61,12 @@ An employee sends a photo of an invoice over WhatsApp and the data lands correct
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Supabase (Postgres) instead of Google Sheets | Real DB needed for querying, editing, audit trail, and dedup. Sheets lacks integrity. | — Pending |
+| Postgres (local Docker) instead of Google Sheets | Real DB needed for querying, editing, audit trail, and dedup. Sheets lacks integrity. | — Pending |
 | React + Vite frontend | Lightweight custom UI gives full control over invoice review UX. | — Pending |
 | WhatsApp integration abstracted | Build core pipeline first; plug in Cloud API or Twilio once extraction is validated. | — Pending |
 | OpenAI GPT-4o vision + Pydantic Structured Outputs | Handles varied Argentine invoice layouts, multilingual labels, normalization in one pass. | — Pending |
 | Admin-only UI (no auth for demo) | Only managers/accountants need the web UI. Auth deferred — this is a demo build. | — Pending |
+| Local Docker stack instead of Supabase | Demo only — no external services, no accounts, runs offline. `docker compose up` starts everything. StorageBackend abstraction keeps production path open. | — Pending |
 | Sender allowlist in DB | Security requirement — only registered employees can submit invoices. | — Pending |
 | Argentine invoice fields in schema | Client issues AFIP-format invoices. CUIT, CAE, tipo de comprobante are required fields. | — Pending |
 
