@@ -24,11 +24,11 @@ async def lifespan(app: FastAPI):
     # NOTE: alembic upgrade head runs in Docker entrypoint BEFORE this lifespan.
     # Do NOT re-run migrations here — causes indefinite hang (alembic#1483).
     yield
-    # Shutdown: dispose async engine via lazy factory
-    from app.db.engine import get_engine
+    # Shutdown: dispose async engine only if it was actually created (WR-01)
+    from app.db.engine import _engine as _db_engine
 
-    engine = get_engine()
-    await engine.dispose()
+    if _db_engine is not None:
+        await _db_engine.dispose()
     log.info("app.stopped")
 
 

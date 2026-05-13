@@ -2,6 +2,7 @@
 import uuid
 
 import pytest
+import pytest_asyncio  # noqa: F401 — required for @pytest.mark.asyncio to work
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -20,6 +21,7 @@ def test_allowlist_table_exists():
     assert "created_at" in column_names
 
 
+@pytest.mark.asyncio
 async def test_allowlist_crud(db_session):
     """INF-01: SenderAllowlist row can be inserted and retrieved via AsyncSession."""
     entry = SenderAllowlist(phone_number="+5491100000000", display_name="Test User")
@@ -37,6 +39,7 @@ async def test_allowlist_crud(db_session):
     assert row.is_active is True
 
 
+@pytest.mark.asyncio
 async def test_invoice_relationship(db_session):
     """Invoice + InvoiceLineItem relationship: UUID PK round-trips, cascade works."""
     invoice = Invoice()

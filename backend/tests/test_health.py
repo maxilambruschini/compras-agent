@@ -30,22 +30,22 @@ async def client(db_session):
 
 @pytest.mark.asyncio
 async def test_health_empty_allowlist(client):
-    """GET /health with no rows in sender_allowlist returns allowlist_count: 0."""
+    """GET /health returns {status, db} only — no allowlist_count (CR-02)."""
     response = await client.get("/health")
     assert response.status_code == 200
     body = response.json()
-    assert body == {"status": "ok", "allowlist_count": 0, "db": "connected"}
+    assert body == {"status": "ok", "db": "connected"}
 
 
 @pytest.mark.asyncio
 async def test_health_with_seed(client, db_session):
-    """GET /health after seeding one allowlist row returns allowlist_count: 1."""
+    """GET /health still returns ok after seeding a row — proves DB connectivity."""
     db_session.add(SenderAllowlist(phone_number="+5491100000000"))
     await db_session.commit()
 
     response = await client.get("/health")
     assert response.status_code == 200
     body = response.json()
-    assert body["allowlist_count"] == 1
     assert body["status"] == "ok"
     assert body["db"] == "connected"
+    assert "allowlist_count" not in body
