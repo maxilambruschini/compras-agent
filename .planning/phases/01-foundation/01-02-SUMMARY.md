@@ -65,9 +65,9 @@ decisions:
   - "VITE_API_URL=http://backend:8000 set in compose environment so in-Docker proxy resolves backend service hostname"
   - "backend/.dockerignore excludes tests/ to keep production image lean (REVIEWS.md LOW)"
 metrics:
-  duration: "~30 minutes"
+  duration: "~35 minutes"
   completed_date: "2026-05-13"
-  tasks_completed: 2
+  tasks_completed: 3
   tests_passing: 11
   files_created: 28
 ---
@@ -108,6 +108,8 @@ Frontend scaffold generated via `pnpm create vite frontend --template react-ts`,
 
 ## End-to-End Verification Evidence
 
+### Task 2 (automated, commit 96775b7)
+
 ```
 docker compose up -d --wait --wait-timeout 120  → exit 0, all 3 services healthy
 curl http://localhost:8000/health                → {"status":"ok","allowlist_count":0,"db":"connected"}
@@ -117,6 +119,19 @@ docker compose logs backend error count          → 0
 \dt in postgres container                        → invoices, invoice_line_items, sender_allowlist, alembic_version
 ```
 
+### Task 3 (human verification — APPROVED 2026-05-13)
+
+All 6 acceptance tests passed:
+
+| # | Test | Result |
+|---|------|--------|
+| 1 | Cold-boot: postgres healthy → alembic upgrade head → Uvicorn started | PASSED |
+| 2 | `GET /health` → `{"status":"ok","allowlist_count":0,"db":"connected"}` | PASSED |
+| 3 | Browser: HTTP 200, title "frontend", contains "Compras Agent" and "Phase 1 — Walking Skeleton", no console errors | PASSED |
+| 4 | DB write: `INSERT INTO sender_allowlist` → `allowlist_count` incremented to 1 | PASSED |
+| 5 | INF-03 negative: `OPENAI_API_KEY` removed → backend exits non-zero with `pydantic.ValidationError` | PASSED |
+| 6 | Cleanup: `docker compose down` completed cleanly | PASSED |
+
 ## ROADMAP Success Criteria Status
 
 | SC | Description | Status |
@@ -125,13 +140,13 @@ docker compose logs backend error count          → 0
 | SC-2 | All tables exist after migrations | VERIFIED (`\dt` shows all 3 tables) |
 | SC-3 | Allowlist table can be seeded with phone numbers | VERIFIED (test_health_with_seed) |
 | SC-4 | ExtractedInvoice model importable without errors | VERIFIED (Plan 01 tests) |
-| SC-5 | App refuses to start with required env var missing | VERIFIED (lifespan get_settings() + Task 3 INF-03 negative test pending) |
+| SC-5 | App refuses to start with required env var missing | VERIFIED (lifespan get_settings() — INF-03 negative test passed in Task 3) |
 
 ## INF-01 / INF-03 Verification
 
 **INF-01:** `sender_allowlist` table created by Alembic migration `0cd640399c29`. Accessible via `/health` COUNT query and direct psql. `\dt` confirms table exists in Postgres container.
 
-**INF-03:** `lifespan()` calls `get_settings()` on startup. `Settings` has 5 required fields with no defaults — missing any raises `pydantic.ValidationError` before `yield`, aborting container startup. Full negative test (removing `OPENAI_API_KEY` from `.env`) deferred to Task 3 human checkpoint.
+**INF-03:** `lifespan()` calls `get_settings()` on startup. `Settings` has 5 required fields with no defaults — missing any raises `pydantic.ValidationError` before `yield`, aborting container startup. **Confirmed in Task 3 human verification:** removing `OPENAI_API_KEY` from `.env` caused the backend container to exit non-zero with `pydantic.ValidationError`, as expected.
 
 ## REVIEWS.md Fix Application Log
 
@@ -152,6 +167,8 @@ None — all plan action items and REVIEWS.md concerns were addressed as written
 ### Notes
 
 The `frontend/vite-env.d.ts` file referenced in the plan's `<files>` list was not explicitly created — `pnpm create vite --template react-ts` does not generate a `vite-env.d.ts` in Vite 8; the TypeScript environment types are declared in `tsconfig.app.json` via `"types": ["vite/client"]` instead. This is correct Vite 8 behavior and does not affect functionality.
+
+**Low-severity finding (discovered during Task 3 verification):** `sender_allowlist.is_active` column has a Python-side `default=True` in the SQLAlchemy model but no `server_default` in the Alembic DDL migration. ORM inserts (e.g., via `session.add(SenderAllowlist(...))`) work correctly because SQLAlchemy populates the default before sending the INSERT. However, raw SQL `INSERT INTO sender_allowlist (phone_number, name) VALUES (...)` without specifying `is_active` will receive a NULL value rather than `True`. This is not a blocker for Phase 1 (all inserts go through the ORM or test fixtures), but should be addressed in a future migration by adding `server_default='true'` to the column definition. Deferred to `deferred-items.md`.
 
 ## Known Stubs
 
@@ -182,16 +199,13 @@ All required files exist:
 - README.md: FOUND
 - .env: FOUND
 
-Both task commits verified in git log:
+All task commits verified in git log:
 - Task 1: 9da5870 (feat(01-02): FastAPI app factory + /health endpoint)
 - Task 2: 96775b7 (feat(01-02): backend Dockerfile + Vite/React scaffold)
+- Task 3: human verification checkpoint — APPROVED 2026-05-13
 
 11 tests passing (pytest backend/tests/).
 
-## Checkpoint Pending
+## Plan Status: COMPLETE
 
-Task 3 is a `checkpoint:human-verify` — requires human verification of:
-1. Cold-boot from empty Postgres volume (`docker compose down -v` → `docker compose up`)
-2. Browser verification of http://localhost:8000/health and http://localhost:5173
-3. DB write test (INSERT into sender_allowlist via psql, verify allowlist_count becomes 1)
-4. INF-03 negative test (remove OPENAI_API_KEY from .env, verify backend exits non-zero with ValidationError)
+All 3 tasks completed and verified. Human verification approved 2026-05-13 — all 6 acceptance tests passed.
