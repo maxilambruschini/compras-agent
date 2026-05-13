@@ -5,8 +5,11 @@ NOT at module import time. This allows pytest's session-scoped env_setup fixture
 to patch env vars before any engine is created.
 
 Module-level singletons start as None and are initialized on first call.
+Thread-safe initialization via double-checked locking (CR-01).
 """
 from __future__ import annotations
+
+import threading
 
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
@@ -14,6 +17,7 @@ from app.config import get_settings
 
 _engine: AsyncEngine | None = None
 _session_local: async_sessionmaker[AsyncSession] | None = None
+_engine_lock = threading.Lock()
 
 
 def get_engine() -> AsyncEngine:
@@ -21,27 +25,35 @@ def get_engine() -> AsyncEngine:
 
     Calls get_settings() inside the function — never at module import time —
     so pytest env_setup fixture can patch DATABASE_URL before the engine is built.
+    Thread-safe via double-checked locking.
     """
     global _engine
     if _engine is None:
-        settings = get_settings()
-        _engine = create_async_engine(
-            settings.database_url,
-            echo=settings.debug,
-            pool_pre_ping=True,
-        )
+        with _engine_lock:
+            if _engine is None:
+                settings = get_settings()
+                _engine = create_async_engine(
+                    settings.database_url,
+                    echo=settings.debug,
+                    pool_pre_ping=True,
+                )
     return _engine
 
 
 def get_async_session_local() -> async_sessionmaker[AsyncSession]:
-    """Return the singleton async_sessionmaker, creating it on first call (lazy)."""
+    """Return the singleton async_sessionmaker, creating it on first call (lazy).
+
+    Thread-safe via double-checked locking.
+    """
     global _session_local
     if _session_local is None:
-        _session_local = async_sessionmaker(
-            get_engine(),
-            expire_on_commit=False,  # Mandatory — prevents MissingGreenlet after commit
-            class_=AsyncSession,
-        )
+        with _engine_lock:
+            if _session_local is None:
+                _session_local = async_sessionmaker(
+                    get_engine(),
+                    expire_on_commit=False,  # Mandatory — prevents MissingGreenlet after commit
+                    class_=AsyncSession,
+                )
     return _session_local
 
 
