@@ -12,7 +12,8 @@ An employee sends a photo of an invoice over WhatsApp and the data lands correct
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Only allowlisted phone numbers can submit invoices — `sender_allowlist` table defined, CRUD tested (INF-01, Phase 1)
+- [x] App refuses to start when required env vars are missing — Pydantic Settings fail-fast with ValidationError (INF-03, Phase 1)
 
 ### Active
 
@@ -61,14 +62,16 @@ An employee sends a photo of an invoice over WhatsApp and the data lands correct
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Postgres (local Docker) instead of Google Sheets | Real DB needed for querying, editing, audit trail, and dedup. Sheets lacks integrity. | — Pending |
-| React + Vite frontend | Lightweight custom UI gives full control over invoice review UX. | — Pending |
-| WhatsApp integration abstracted | Build core pipeline first; plug in Cloud API or Twilio once extraction is validated. | — Pending |
-| OpenAI GPT-4o vision + Pydantic Structured Outputs | Handles varied Argentine invoice layouts, multilingual labels, normalization in one pass. | — Pending |
-| Admin-only UI (no auth for demo) | Only managers/accountants need the web UI. Auth deferred — this is a demo build. | — Pending |
-| Local Docker stack instead of Supabase | Demo only — no external services, no accounts, runs offline. `docker compose up` starts everything. StorageBackend abstraction keeps production path open. | — Pending |
-| Sender allowlist in DB | Security requirement — only registered employees can submit invoices. | — Pending |
-| Argentine invoice fields in schema | Client issues AFIP-format invoices. CUIT, CAE, tipo de comprobante are required fields. | — Pending |
+| Postgres (local Docker) instead of Google Sheets | Real DB needed for querying, editing, audit trail, and dedup. Sheets lacks integrity. | ✓ Schema live — invoices, invoice_line_items, sender_allowlist tables migrated (Phase 1) |
+| React + Vite frontend | Lightweight custom UI gives full control over invoice review UX. | ✓ Vite/React scaffold running at :5173 via Docker Compose (Phase 1) |
+| WhatsApp integration abstracted | Build core pipeline first; plug in Cloud API or Twilio once extraction is validated. | — Phase 3 |
+| OpenAI GPT-4o vision + Pydantic Structured Outputs | Handles varied Argentine invoice layouts, multilingual labels, normalization in one pass. | — Phase 2 |
+| Admin-only UI (no auth for demo) | Only managers/accountants need the web UI. Auth deferred — this is a demo build. | — Phase 4 |
+| Local Docker stack instead of Supabase | Demo only — no external services, no accounts, runs offline. `docker compose up` starts everything. StorageBackend abstraction keeps production path open. | ✓ docker compose up → all containers healthy; alembic runs on boot (Phase 1) |
+| Sender allowlist in DB | Security requirement — only registered employees can submit invoices. | ✓ sender_allowlist table + CRUD tests green; /health reports count (Phase 1) |
+| Argentine invoice fields in schema | Client issues AFIP-format invoices. CUIT, CAE, tipo de comprobante are required fields. | ✓ Invoice + InvoiceLineItem ORM models with full AFIP column set; TipoComprobante enum (Phase 1) |
+| sqlalchemy.Uuid (dialect-agnostic) for UUID columns | aiosqlite test backend cannot bind postgresql.UUID; dialect-agnostic Uuid works on both backends. | ✓ Applied in models.py — tests pass on SQLite, migration produces native Postgres UUID DDL (Phase 1) |
+| Lazy engine factory (get_settings() inside function) | pytest env_setup fixture must patch env vars before any engine is created. | ✓ engine.py uses lazy initialization — no module-level Settings() call (Phase 1) |
 
 ## Evolution
 
@@ -88,4 +91,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-12 after initialization*
+*Last updated: 2026-05-13 — Phase 1 (Foundation) complete*
