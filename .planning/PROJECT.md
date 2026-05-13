@@ -65,7 +65,7 @@ An employee sends a photo of an invoice over WhatsApp and the data lands correct
 | React + Vite frontend | Lightweight custom UI gives full control over invoice review UX. | — Pending |
 | WhatsApp integration abstracted | Build core pipeline first; plug in Cloud API or Twilio once extraction is validated. | — Pending |
 | OpenAI GPT-4o vision + Pydantic Structured Outputs | Handles varied Argentine invoice layouts, multilingual labels, normalization in one pass. | — Pending |
-| Admin-only UI | Only managers/accountants need the web UI. Submitters interact via WhatsApp only. | — Pending |
+| Admin-only UI (no auth for demo) | Only managers/accountants need the web UI. Auth deferred — this is a demo build. | — Pending |
 | Sender allowlist in DB | Security requirement — only registered employees can submit invoices. | — Pending |
 | Argentine invoice fields in schema | Client issues AFIP-format invoices. CUIT, CAE, tipo de comprobante are required fields. | — Pending |
 
