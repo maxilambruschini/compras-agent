@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Docker Compose scaffold, Postgres schema, Pydantic models, environment wiring (completed 2026-05-13)
 - [ ] **Phase 2: Extraction Pipeline** - GPT-4o vision extraction service, confidence scoring, storage, testable in isolation
-- [ ] **Phase 3: WhatsApp Pipeline** - End-to-end webhook receive → extract → store → reply
+- [x] **Phase 3: WhatsApp Pipeline** - End-to-end webhook receive → extract → store → reply (completed 2026-05-14)
 - [ ] **Phase 4: Admin UI** - React admin interface for invoice list, detail, edit, search, and delete
 
 ## Phase Details
@@ -67,13 +67,13 @@ Plans:
   4. Sending an unreadable image or unsupported file format produces an informative error reply to the sender
   5. Submitting a duplicate invoice (same numero_documento + proveedor) does not create a second database record; the sender is notified
   6. Inbound webhook requests with invalid HMAC-SHA256 signatures are rejected with HTTP 401; valid signatures are processed normally
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 **Wave 1**
 - [x] 03-01-PLAN.md — WhatsAppProvider Protocol + TwilioProvider + webhook (signature, allowlist, ack, asyncio.create_task hook) + Alembic UNIQUE migration
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 03-02-PLAN.md — InvoiceService + process_invoice background pipeline (extract, dedup, save, summary/duplicate/error reply) + live Twilio sandbox verification
+- [x] 03-02-PLAN.md — InvoiceService + process_invoice background pipeline (extract, dedup, save, summary/duplicate/error reply) + live Twilio sandbox verification
 
 ### Phase 4: Admin UI
 **Goal**: A manager or accountant can open a browser, see all captured invoices, search and filter them, inspect details with line items, correct AI errors, and delete records
@@ -99,5 +99,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete   | 2026-05-13 |
 | 2. Extraction Pipeline | 0/TBD | Not started | - |
-| 3. WhatsApp Pipeline | 1/2 | In Progress|  |
+| 3. WhatsApp Pipeline | 2/2 | Complete   | 2026-05-14 |
 | 4. Admin UI | 0/TBD | Not started | - |
