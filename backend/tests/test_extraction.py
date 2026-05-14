@@ -544,28 +544,31 @@ async def test_post_extraction_test_404_when_debug_false(nodebug_client):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_live_extraction_factura_a(tmp_path):
+async def test_live_extraction_factura_a(tmp_path, real_openai_api_key):
     """Live GPT-4o extraction on a real fixture image (EXT-01..EXT-07, VAL-04).
 
     Skipped unless:
-    - OPENAI_API_KEY is set in the environment
-    - backend/tests/fixtures/factura_a.jpg exists (committed in Plan 03)
+    - OPENAI_API_KEY is set in the environment (real key, not the test stub)
+    - At least one factura_a*.jpg exists in backend/tests/fixtures/
 
     Run explicitly with: pytest -m integration
     """
-    if not os.environ.get("OPENAI_API_KEY"):
+    if not real_openai_api_key:
         pytest.skip("OPENAI_API_KEY not set — live integration test skipped")
 
-    fixture_path = Path(__file__).parent / "fixtures" / "factura_a.jpg"
-    if not fixture_path.exists():
-        pytest.skip(f"Fixture image missing: {fixture_path} — will be committed in Plan 03")
+    # Accept any factura_a_*.jpg fixture (descriptive names from Plan 03)
+    fixtures_dir = Path(__file__).parent / "fixtures"
+    candidates = sorted(fixtures_dir.glob("factura_a*.jpg"))
+    if not candidates:
+        pytest.skip(f"No factura_a fixture image found in {fixtures_dir}")
+    fixture_path = candidates[0]
 
     from openai import AsyncOpenAI
     from app.services.storage import LocalStorageBackend
     from app.services.extraction import ExtractionService, ExtractionResult
 
     settings = get_settings()
-    client = AsyncOpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    client = AsyncOpenAI(api_key=real_openai_api_key)
     storage = LocalStorageBackend(root=str(tmp_path))
 
     # Patch storage_path so LocalStorageBackend resolves to tmp_path
@@ -577,7 +580,7 @@ async def test_live_extraction_factura_a(tmp_path):
             settings=settings,
         )
         image_bytes = fixture_path.read_bytes()
-        result = await service.extract(image_bytes, "factura_a.jpg")
+        result = await service.extract(image_bytes, fixture_path.name)
 
     assert isinstance(result, ExtractionResult)
     assert isinstance(result.invoice, ExtractedInvoice)
