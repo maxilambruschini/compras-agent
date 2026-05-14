@@ -47,7 +47,7 @@ def _make_line_item(n: int = 0) -> LineItem:
         unidades_por_bulto=Decimal("6"),
         precio_unitario_sin_iva=Decimal("100.00"),
         descuento_pct=Decimal("0"),
-        iva_rate=Decimal("21.0"),
+        iva_rate=Decimal("0.21"),
         percepciones_iibb=Decimal("0"),
     )
 

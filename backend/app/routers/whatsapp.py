@@ -214,10 +214,10 @@ def _compute_total(line_items: list) -> Decimal | None:
     """Compute total invoice value from extracted line items.
 
     Formula per REQUIREMENTS.md (precio_final_con_iva):
-        total = Σ bultos × precio_unitario_sin_iva × (1 + iva_rate/100) × (1 - descuento_pct)
+        total = Σ bultos × precio_unitario_sin_iva × (1 + iva_rate) × (1 - descuento_pct)
 
-    Note: iva_rate is stored as a percentage (e.g. 21.0 means 21%),
-    so it is divided by 100 in this formula.
+    Note: iva_rate and descuento_pct are stored as fractions (e.g. 0.21 = 21%, 0.05 = 5%),
+    matching the ExtractedInvoice Pydantic model convention from Phase 2.
 
     Returns None when no usable line items produce a non-zero total
     (signals em-dash display to the caller).
@@ -227,7 +227,7 @@ def _compute_total(line_items: list) -> Decimal | None:
     for li in line_items:
         bultos = li.bultos or Decimal("0")
         precio = li.precio_unitario_sin_iva or Decimal("0")
-        iva = (li.iva_rate or Decimal("0")) / Decimal("100")
+        iva = li.iva_rate or Decimal("0")
         descuento = li.descuento_pct or Decimal("0")
         line_total = bultos * precio * (Decimal("1") + iva) * (Decimal("1") - descuento)
         if precio != Decimal("0"):

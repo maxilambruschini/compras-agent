@@ -384,7 +384,7 @@ def _make_stub_invoice(
                 descripcion="Widget",
                 bultos=Decimal("2"),
                 precio_unitario_sin_iva=Decimal("100"),
-                iva_rate=Decimal("21"),
+                iva_rate=Decimal("0.21"),
                 descuento_pct=Decimal("0"),
             )
         ],
@@ -649,7 +649,7 @@ async def test_auto_saved_reply(process_invoice_client):
                 LineItem(
                     bultos=Decimal("2"),
                     precio_unitario_sin_iva=Decimal("100"),
-                    iva_rate=Decimal("21"),
+                    iva_rate=Decimal("0.21"),
                     descuento_pct=Decimal("0"),
                 )
             ],
