@@ -1,7 +1,8 @@
 ---
 phase: 4
-reviewers: [codex]
+reviewers: [codex, claude]
 reviewed_at: 2026-05-14T23:30:00-03:00
+cycle_2_reviewed_at: 2026-05-14T20:38:00-03:00
 plans_reviewed:
   - 04-01-PLAN.md
   - 04-02-PLAN.md
@@ -133,3 +134,117 @@ N/A — single reviewer.
 | MEDIUM | Pin shadcn version: change `npx shadcn@latest` to `npx shadcn@4.7.0` in Plan 04-02 tasks |
 | MEDIUM | Specify that count query in GET /invoices uses the same filter predicates as the data query (currently ambiguous in Plan 04-01 Task 2) |
 | LOW | Add URL-backed filter state as a follow-up enhancement note in Plan 04-03 (not blocking execution) |
+
+---
+
+## Cycle 2 Review — Claude (Self-Review)
+
+**Date:** 2026-05-14T20:38:00-03:00
+**Reviewer:** Claude (independent; Codex was cycle 1 reviewer)
+**Scope:** Full re-review of all 5 plans after replan addressing 3 HIGH concerns from cycle 1.
+
+---
+
+### Part 1: Resolution of Cycle 1 HIGH Concerns
+
+#### HIGH #1: UUID Type Ambiguity — FULLY RESOLVED
+
+All layers addressed with explicit acceptance criteria and automated verification:
+
+- **Backend (Plan 04-01):** `id: uuid.UUID` in all Pydantic schemas; `invoice_id: uuid.UUID = Path(...)` on all 5 invoice path params. Acceptance criteria: `grep -c "uuid.UUID = Path" backend/app/routers/admin.py gives 5+`. Two new tests: `test_invalid_uuid_returns_422` and `test_invoice_id_in_response_is_uuid_string`. Verification step checks UUID path param count automatically.
+- **Frontend (Plan 04-03):** `InvoiceId` type alias exported from `types/invoice.ts`; `id` fields in `InvoiceListItem` and `LineItemResponse` use `InvoiceId` not plain `string`. Acceptance criteria includes `grep -c "InvoiceId"` check. Plan 04-05 also verifies `InvoiceId` export in pre-verification automated checks.
+
+**Status: CLOSED.**
+
+#### HIGH #2: Image Filename Collision — FULLY RESOLVED
+
+Assumption captured as A4 at every layer:
+
+- **Backend (Plan 04-01):** Module-level `# A4:` comment on `/images/{filename}` handler. Acceptance criteria: `grep -c "A4:" backend/app/routers/admin.py — at least 1`. Verification step 8 checks automatically.
+- **Frontend (Plan 04-03):** JSDoc `@note A4` above `imageUrl()` in `api.ts`. Acceptance criteria: `grep -c "@note A4"`. Plan 04-04 interfaces block explicitly references A4 assumption.
+- **Forward path documented:** Both plans state replacement path is `/invoices/{id}/image` for future auth-gated serving.
+
+**Status: CLOSED.**
+
+#### HIGH #3: /images/{filename} Information Disclosure — FULLY RESOLVED
+
+T-4-03 threat entry substantially expanded:
+
+- **Plan 04-01 threat model:** T-4-03 row now names specific data exposed ("CUIT, CAE, financial totals, vendor data"). Disposition requires prominent module docstring (not just a comment), A4 comment, and future auth path. Verification step 9: `grep -c "guessable\|CUIT\|information disclosure" backend/app/routers/admin.py — at least 1`.
+- **Plan 04-01 success criteria:** "admin.py module docstring prominently documents T-4-03 guessable filename risk (not just a one-line comment)".
+- **Plan 04-05 human checkpoint:** Explicitly includes T-4-03 security awareness verification — human must acknowledge the unauthenticated image endpoint as accepted v1 risk before marking phase complete.
+
+**Status: CLOSED.**
+
+---
+
+### Part 2: Fresh Findings
+
+#### MEDIUM: `<done>` markers say "12 tests" but plan specifies 14
+
+Plan 04-01 Task 1 action names 14 test functions (including `test_invalid_uuid_returns_422` and `test_invoice_id_in_response_is_uuid_string` added in the replan). Plan 04-01 Task 1 `<done>` tag reads "pytest collects 12 tests, all skipped, 0 errors". Plan 04-05 Task 1 `<done>` also says "12 admin tests". Plan 04-05 Task 1 acceptance criteria correctly says "14 tests". An executor reading the `<done>` markers as authoritative may stop at 12 tests and omit the 2 UUID validation tests.
+
+**Recommendation:** Update `<done>` markers in Plan 04-01 Task 1 and Plan 04-05 Task 1 from "12" to "14".
+
+#### MEDIUM: RESEARCH.md still shows `npx shadcn@latest` in all code examples
+
+Plan 04-02 correctly pins to `shadcn@2` throughout. However, RESEARCH.md Pattern 2 and the installation commands block still show `npx shadcn@latest init` and `npx shadcn@latest add ...`. Executors who reference RESEARCH.md code examples over the plan task text will use `@latest` and lose reproducibility guarantees.
+
+**Recommendation:** Update RESEARCH.md Pattern 2 and installation commands to use `npx shadcn@2`.
+
+#### MEDIUM: `InvoiceId` is a plain type alias, not a structural branded type — plan description overstates enforcement
+
+Plan 04-03 Task 1 action states: "TypeScript callers cannot accidentally pass an arbitrary string where a UUID is required." This claim is incorrect for a plain `export type InvoiceId = string` alias. TypeScript structural typing makes `InvoiceId` and `string` fully interchangeable — the alias provides documentation intent only. A true branded type would require `string & { readonly __brand: "InvoiceId" }`.
+
+**Recommendation:** Correct the plan description to: "TypeScript callers can see from the type that a UUID string is expected" (accurate). Upgrading to a true branded type is optional but not required for v1.
+
+#### LOW: RESEARCH.md `imageUrl()` signature takes `filename: string`, plan takes `imagePath: string`
+
+RESEARCH.md Pattern 7 shows `imageUrl = (filename: string)` (pre-extracted). Plan 04-03 correctly specifies `imageUrl(imagePath: string)` with internal extraction via `split('/').pop()`. The plan is correct; RESEARCH.md is outdated. Risk is low since plan task actions take precedence.
+
+**Recommendation:** Update RESEARCH.md Pattern 7 to match the plan signature.
+
+#### LOW: Plan 04-03 `must_haves.truths` lists "Total" column but Task 2 removes it
+
+`must_haves.truths`: `"InvoiceTable shows columns: Proveedor, Tipo, Número, Fecha, Estado, Total"`. Task 2 action correctly removes Total (no total field in `InvoiceListItem`) and replaces with "Creado". The `must_haves` truth is stale.
+
+**Recommendation:** Update Plan 04-03 `must_haves.truths` to replace "Total" with "Creado".
+
+#### LOW: `ActionBar` props define `onEditClick?: never` — unconventional
+
+Plan 04-04 Task 1: `{ id: string; status: string; onDeleteClick: () => void; onEditClick?: never }`. The `?: never` pattern explicitly disallows the prop at the TypeScript type level. The intent is clear (ActionBar has no edit action), but the `never` annotation is unnecessary and may confuse an executor.
+
+**Recommendation:** Remove `onEditClick?: never` from the ActionBar props definition.
+
+---
+
+### Summary Table
+
+| Concern | Cycle | Severity | Status |
+|---------|-------|----------|--------|
+| UUID type ambiguity — FastAPI path params, Pydantic schemas, TS interfaces | 1 | HIGH | RESOLVED |
+| Image filename collision — A4 assumption undocumented | 1 | HIGH | RESOLVED |
+| /images/{filename} information disclosure — T-4-03 understated | 1 | HIGH | RESOLVED |
+| `<done>` markers say "12 tests" but plan requires 14 | 2 | MEDIUM | OPEN |
+| RESEARCH.md still shows `shadcn@latest` in all code examples | 2 | MEDIUM | OPEN |
+| `InvoiceId` type alias — plan overstates TypeScript enforcement | 2 | MEDIUM | OPEN |
+| RESEARCH.md `imageUrl()` signature mismatch | 2 | LOW | OPEN |
+| Plan 04-03 `must_haves.truths` "Total" column stale | 2 | LOW | OPEN |
+| `ActionBar` `onEditClick?: never` prop — unconventional | 2 | LOW | OPEN |
+
+### Risk Assessment
+
+**Overall risk: LOW-MEDIUM.**
+
+All 3 cycle 1 HIGH concerns are fully resolved with verifiable acceptance criteria and human checkpoint coverage. No new HIGH concerns identified in cycle 2. The 3 new MEDIUM concerns are documentation/description issues — the plan task actions are correct and executor-facing. Plans are ready for execution with optional pre-execution fixes.
+
+### Recommended Actions Before Execution
+
+| Priority | Action | Target |
+|----------|--------|--------|
+| MEDIUM | Update `<done>` markers in 04-01 Task 1 and 04-05 Task 1 from "12" to "14" admin tests | 04-01, 04-05 |
+| MEDIUM | Update RESEARCH.md Pattern 2 and installation commands: `shadcn@latest` → `shadcn@2` | RESEARCH.md |
+| MEDIUM | Correct Plan 04-03 Task 1 description: `InvoiceId` is a type alias for documentation, not compile-time UUID enforcement | 04-03 |
+| LOW | Update RESEARCH.md Pattern 7: `imageUrl(filename)` → `imageUrl(imagePath)` with internal filename extraction | RESEARCH.md |
+| LOW | Update Plan 04-03 `must_haves.truths`: replace "Total" with "Creado" column | 04-03 |
+| LOW | Remove `onEditClick?: never` from ActionBar props in Plan 04-04 Task 1 | 04-04 |
