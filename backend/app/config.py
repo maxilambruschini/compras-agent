@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     debug: bool = False
     log_level: str = "INFO"
     confidence_threshold: float = 0.85
+    storage_path: str = "/data/invoices"
 
 
 @lru_cache
