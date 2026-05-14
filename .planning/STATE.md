@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: ready_to_execute
-stopped_at: Phase 4 planned — 5 plans in 3 waves, ready to execute
-last_updated: "2026-05-14T23:21:00.000Z"
-last_activity: 2026-05-14
+status: executing
+stopped_at: Phase 4 UI-SPEC approved
+last_updated: "2026-05-14T23:42:03.227Z"
+last_activity: 2026-05-14 -- Phase 04 execution started
 progress:
   total_phases: 4
   completed_phases: 3
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** An employee sends a photo of an invoice over WhatsApp and the data lands correctly in the database — no manual entry, no lost receipts.
-**Current focus:** Phase 4 — admin-ui
+**Current focus:** Phase 04 — admin-ui
 
 ## Current Position
 
-Phase: 4
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-05-14
+Phase: 04 (admin-ui) — EXECUTING
+Plan: 1 of 5
+Status: Executing Phase 04
+Last activity: 2026-05-14 -- Phase 04 execution started
 
 Progress: [██████████] 100%
 
