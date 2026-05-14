@@ -51,6 +51,11 @@ def create_app() -> FastAPI:
 
         app.include_router(extraction_router, prefix="/extraction", tags=["extraction"])
 
+    # WhatsApp webhook — always registered; provider selected via WHATSAPP_PROVIDER env var
+    from app.routers.whatsapp import router as whatsapp_router
+
+    app.include_router(whatsapp_router, prefix="/whatsapp", tags=["whatsapp"])
+
     return app
 
 
