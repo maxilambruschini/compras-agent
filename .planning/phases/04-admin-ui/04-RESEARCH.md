@@ -913,17 +913,15 @@ Frontend testing: No test framework installed. For this phase, backend API endpo
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Admin router prefix: `/` vs `/api/`?**
+1. **Admin router prefix: `/` vs `/api/`?** (RESOLVED)
    - What we know: Existing routers use prefixes: `/whatsapp`, `/extraction`. The Vite proxy routes `/api` to backend. Current CONTEXT.md D-13 shows endpoints as `/invoices` and `/images` (no `/api` prefix).
-   - What's unclear: Should the admin router use an `/api` prefix so the Vite proxy can catch all non-image fetch calls, or keep top-level routes + CORS?
-   - Recommendation: Keep top-level routes (`/invoices`, `/images`) and use CORS. This is consistent with `/health` being top-level. Adding an `/api` prefix would break the image `<img src>` pattern (browsers don't auto-add prefixes) and require frontend changes to all fetch calls. CORS solves both cases cleanly.
+   - **Decision:** Keep top-level routes (`/invoices`, `/images`) and use CORS. This is consistent with `/health` being top-level. Adding an `/api` prefix would break the image `<img src>` pattern (browsers don't auto-add prefixes) and require frontend changes to all fetch calls. CORS solves both cases cleanly.
 
-2. **Search across line item `descripcion` (UI-02)**
+2. **Search across line item `descripcion` (UI-02)** (RESOLVED)
    - What we know: UI-02 requires searching by "product description" — which lives in `invoice_line_items.descripcion`, not in the `invoices` table.
-   - What's unclear: Does the `q` search need to join `invoice_line_items` and return the parent invoice?
-   - Recommendation: For v1, implement `q` search on `invoices.proveedor` + `invoices.numero_documento`. Add a subquery join for `descripcion` only if the product explicitly requires it. The requirement says "by proveedor name, product description, or document number" — a JOIN subquery is straightforward but adds complexity. Planner should decide and note in PLAN.
+   - **Decision:** Implement `q` search across all three fields: `invoices.proveedor`, `invoices.numero_documento`, AND `invoice_line_items.descripcion` via a scalar subquery (`Invoice.id.in_(select(InvoiceLineItem.invoice_id).where(...))`). UI-02 is a locked requirement; silently dropping product description search is not acceptable. The subquery adds ~2ms at v1 scale (<20 invoices/day) and is straightforward with SQLAlchemy.
 
 ---
 

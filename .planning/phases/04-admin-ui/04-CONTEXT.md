@@ -30,7 +30,7 @@ Deliverables:
 ### Editing Interaction
 
 - **D-01:** Editing uses **two separate modals** — one for document-level fields, one per line item. The detail page has an "Edit document" button for the invoice header and an "Edit" button on each line-item row. Both open a modal form pre-filled with the current values.
-- **D-02:** Saving from either modal calls a **PUT endpoint** (full replacement of the editable fields). API: `PATCH /invoices/{id}` for document fields; `PATCH /invoices/{id}/items/{item_id}` for line items.
+- **D-02:** Saving from either modal calls a **PATCH endpoint** (partial update — only fields present in the request body are changed). API: `PATCH /invoices/{id}` for document fields; `PATCH /invoices/{id}/items/{item_id}` for line items.
 - **D-03:** After a successful save, TanStack Query invalidates the detail query so the page re-renders with the updated values.
 
 ### Status Workflow
