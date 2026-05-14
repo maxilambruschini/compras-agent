@@ -90,8 +90,8 @@ Plans:
 **Plans:** 5 plans
 Plans:
 **Wave 1** *(parallel — no shared files)*
-- [ ] 04-01-PLAN.md — Wave 0 test stubs + admin.py skeleton + schemas + 7 API endpoints + CORS + pytest suite (UI-01, UI-02, UI-03, UI-04, UI-05)
-- [ ] 04-02-PLAN.md — Tailwind v4 install + shadcn init + 9 components + vite.config.ts + index.css + tsconfig alias (UI-01, UI-06)
+- [x] 04-01-PLAN.md — Wave 0 test stubs + admin.py skeleton + schemas + 7 API endpoints + CORS + pytest suite (UI-01, UI-02, UI-03, UI-04, UI-05)
+- [x] 04-02-PLAN.md — Tailwind v4 install + shadcn init + 9 components + vite.config.ts + index.css + tsconfig alias (UI-01, UI-06)
 
 **Wave 2** *(serial — 04-04 depends on 04-03 stub; blocked on Wave 1)*
 - [ ] 04-03-PLAN.md — TypeScript types + API client + hooks + shared components + InvoiceListPage + App router (UI-01, UI-02, UI-06)
