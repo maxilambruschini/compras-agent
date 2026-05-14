@@ -1,7 +1,7 @@
 ---
 phase: 4
 slug: admin-ui
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-05-14
@@ -43,7 +43,7 @@ Declared values (must be multiples of 4):
 
 Exceptions:
 - List table row height: 44px minimum (touch target compliance even for desktop — prevents misclick on status highlight)
-- Modal max-width: 560px (document edit), 640px (line-item edit — wider for numeric columns)
+- Modal max-width: 560px (document edit), 640px (line-item edit — wider for numeric columns) — layout constraints, not spacing tokens; exempt from the 4px grid requirement
 - Detail page split: `grid-template-columns: 1fr 1fr` with 32px gap; image panel is `position: sticky; top: 24px`
 
 ---
