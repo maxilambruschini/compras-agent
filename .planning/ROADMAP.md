@@ -52,7 +52,7 @@ Plans:
 - [x] 02-01-PLAN.md — Wave 0 tests + StorageBackend + ExtractionService skeleton + debug-gated /extraction/test router
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 02-02-PLAN.md — SYSTEM_PROMPT constant + hardened error semantics + EXT-01..EXT-07 + VAL-04 + VAL-05 mocked tests + integration marker
+- [x] 02-02-PLAN.md — SYSTEM_PROMPT constant + hardened error semantics + EXT-01..EXT-07 + VAL-04 + VAL-05 mocked tests + integration marker
 - [ ] 02-03-PLAN.md — calibrate_prompt.py (Claude Opus 4.7 ground truth + GPT-4o diff loop) + fixtures README + D-11 human done-gate
 
 ### Phase 3: WhatsApp Pipeline
