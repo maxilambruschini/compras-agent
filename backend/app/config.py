@@ -24,6 +24,20 @@ class Settings(BaseSettings):
     confidence_threshold: float = 0.85
     storage_path: str = "/data/invoices"
 
+    # WhatsApp provider selection (D-04)
+    whatsapp_provider: str = "twilio"  # "twilio" | "meta"
+
+    # Twilio credentials (required when whatsapp_provider="twilio"; empty default allows Meta path)
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
+    twilio_from_number: str = ""  # must include "whatsapp:" prefix, e.g. "whatsapp:+14155238886"
+
+    # Optional: when set, signature validation uses this URL instead of str(request.url).
+    # Required when running behind ngrok or a reverse proxy where request.url reflects the
+    # internal host rather than the public URL that Twilio signed. (resolves 03-REVIEWS.md
+    # Codex MEDIUM concern #3)
+    webhook_base_url: str | None = None
+
 
 @lru_cache
 def get_settings() -> Settings:

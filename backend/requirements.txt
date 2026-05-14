@@ -8,3 +8,4 @@ alembic==1.18.4
 structlog==25.5.0
 python-dotenv==1.2.2
 openai==2.36.0
+twilio==9.10.9

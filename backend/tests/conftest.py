@@ -45,6 +45,13 @@ def env_setup():
     mp.setenv("WHATSAPP_TOKEN", "test-whatsapp-token")
     mp.setenv("WHATSAPP_PHONE_NUMBER_ID", "test-phone-number-id")
     mp.setenv("WHATSAPP_VERIFY_TOKEN", "test-verify-token")
+    # Phase 3: WhatsApp provider credentials
+    mp.setenv("WHATSAPP_PROVIDER", "twilio")
+    mp.setenv("TWILIO_ACCOUNT_SID", "test-twilio-sid")
+    mp.setenv("TWILIO_AUTH_TOKEN", "test-twilio-token")
+    mp.setenv("TWILIO_FROM_NUMBER", "whatsapp:+14155238886")
+    # NOTE: WEBHOOK_BASE_URL is NOT set at session scope; individual tests that need it
+    # must patch it via monkeypatch and call get_settings.cache_clear() before/after.
 
     # Clear the lru_cache so any previously cached Settings (from other imports) is evicted
     from app.config import get_settings
