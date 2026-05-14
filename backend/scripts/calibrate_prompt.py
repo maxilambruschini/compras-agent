@@ -233,7 +233,7 @@ async def run_gpt4o_extraction(fixture_path: Path, settings) -> dict:
 # Value normalisation (reduces diff noise from numeric formatting differences)
 # ---------------------------------------------------------------------------
 
-_DECIMAL_PATTERN = re.compile(r"^-?\d+(\.\d+)?$")
+_DECIMAL_PATTERN = re.compile(r"^-?\d+(\.\d+)?([eE][+-]?\d+)?$")
 
 
 def normalize_value(v: Any) -> Any:
@@ -248,7 +248,7 @@ def normalize_value(v: Any) -> Any:
     if v is None:
         return None
     if isinstance(v, str):
-        stripped = v.strip()
+        stripped = v.strip().rstrip(".")
         if stripped == "":
             return None
         if _DECIMAL_PATTERN.match(stripped):
@@ -425,7 +425,16 @@ def cmd_diff(args) -> int:
             continue
 
         print(f"[...] running GPT-4o extraction for {path.name} ...")
-        extracted = asyncio.run(run_gpt4o_extraction(path, settings))
+        try:
+            extracted = asyncio.run(run_gpt4o_extraction(path, settings))
+        except Exception as exc:
+            report["clean"] = False
+            report["fixtures"][path.stem] = {
+                "status": "extraction_error",
+                "error": str(exc),
+            }
+            print(f"[ERROR] {path.stem}: extraction failed — {exc}")
+            continue
         ground_truth = json.loads(gt_path.read_text())
 
         diffs = diff_invoice(ground_truth, extracted)
