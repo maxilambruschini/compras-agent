@@ -9,10 +9,10 @@
 
 ### WhatsApp Intake
 
-- [ ] **WA-01**: Employee can send an invoice photo or PDF via WhatsApp and receive a reply acknowledging receipt
-- [ ] **WA-02**: System rejects messages from non-allowlisted phone numbers with an explanatory message in Spanish
-- [ ] **WA-03**: System replies to the sender with a summary of extracted fields after processing completes
-- [ ] **WA-04**: System notifies sender if the image is unreadable or the file format is not supported
+- [x] **WA-01**: Employee can send an invoice photo or PDF via WhatsApp and receive a reply acknowledging receipt
+- [x] **WA-02**: System rejects messages from non-allowlisted phone numbers with an explanatory message in Spanish
+- [x] **WA-03**: System replies to the sender with a summary of extracted fields after processing completes
+- [x] **WA-04**: System notifies sender if the image is unreadable or the file format is not supported
 
 ### Extraction
 
@@ -26,9 +26,9 @@
 
 ### Validation & Storage
 
-- [ ] **VAL-01**: System detects duplicate submissions using numero_documento + proveedor; duplicate is flagged and not saved as a new record
-- [ ] **VAL-02**: Extractions below the confidence threshold are saved with status=pending_review and visually flagged in the admin UI
-- [ ] **VAL-03**: Extractions above the confidence threshold are saved with status=auto_saved
+- [x] **VAL-01**: System detects duplicate submissions using numero_documento + proveedor; duplicate is flagged and not saved as a new record
+- [x] **VAL-02**: Extractions below the confidence threshold are saved with status=pending_review and visually flagged in the admin UI
+- [x] **VAL-03**: Extractions above the confidence threshold are saved with status=auto_saved
 - [ ] **VAL-04**: Original invoice image or PDF is stored on the local filesystem (via StorageBackend abstraction) and linked to the database record
 - [ ] **VAL-05**: Processing errors (download failure, extraction failure, validation failure) are logged with the WhatsApp message ID for diagnosis and retry
 
@@ -45,9 +45,9 @@
 ### Infrastructure
 
 - [ ] **INF-01**: Allowlisted sender phone numbers are stored in the database; only these numbers can submit invoices
-- [ ] **INF-02**: WhatsApp webhook HMAC-SHA256 signature is validated on every inbound request
+- [x] **INF-02**: WhatsApp webhook HMAC-SHA256 signature is validated on every inbound request
 - [ ] **INF-03**: All API keys and secrets are stored in environment variables, never in source code
-- [ ] **INF-04**: WhatsApp webhook responds within 5 seconds; invoice processing runs as a background task after the response is sent
+- [x] **INF-04**: WhatsApp webhook responds within 5 seconds; invoice processing runs as a background task after the response is sent
 
 ---
 
@@ -115,15 +115,15 @@ These are derived at query/display time:
 | EXT-07 | Phase 2 | Pending |
 | VAL-04 | Phase 2 | Pending |
 | VAL-05 | Phase 2 | Pending |
-| WA-01 | Phase 3 | Pending |
-| WA-02 | Phase 3 | Pending |
-| WA-03 | Phase 3 | Pending |
-| WA-04 | Phase 3 | Pending |
-| VAL-01 | Phase 3 | Pending |
-| VAL-02 | Phase 3 | Pending |
-| VAL-03 | Phase 3 | Pending |
-| INF-02 | Phase 3 | Pending |
-| INF-04 | Phase 3 | Pending |
+| WA-01 | Phase 3 | Complete |
+| WA-02 | Phase 3 | Complete |
+| WA-03 | Phase 3 | Complete |
+| WA-04 | Phase 3 | Complete |
+| VAL-01 | Phase 3 | Complete |
+| VAL-02 | Phase 3 | Complete |
+| VAL-03 | Phase 3 | Complete |
+| INF-02 | Phase 3 | Complete |
+| INF-04 | Phase 3 | Complete |
 | UI-01 | Phase 4 | Pending |
 | UI-02 | Phase 4 | Pending |
 | UI-03 | Phase 4 | Pending |
