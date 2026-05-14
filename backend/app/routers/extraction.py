@@ -14,7 +14,7 @@ get_extraction_service() is the SOLE construction site for ExtractionService.
 The openai_api_key flows from settings into AsyncOpenAI — never referenced in
 service code (T-02-02).
 """
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from openai import AsyncOpenAI
 
 from app.config import Settings, get_settings
@@ -55,7 +55,9 @@ async def extraction_test(
     curl example:
         curl -F file=@invoice.jpg http://localhost:8000/extraction/test
     """
-    data = await file.read()
+    data = await file.read(10 * 1024 * 1024 + 1)  # read up to 10 MB + 1 byte
+    if len(data) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="File exceeds 10 MB limit")
     return await service.extract(
         image_bytes=data,
         filename=file.filename or "upload.bin",

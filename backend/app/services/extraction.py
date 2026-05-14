@@ -174,7 +174,7 @@ class ExtractionService:
         # RESEARCH.md open question #1. (Addresses review MEDIUM #5.)
         try:
             completion = await self._client.chat.completions.parse(
-                model="gpt-4o",
+                model="gpt-4o-2024-08-06",
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {
@@ -197,6 +197,8 @@ class ExtractionService:
             # Network errors, AuthenticationError, etc. — never log secrets (T-02-02)
             log.error("extraction.failed", error=str(exc), stage="openai_parse")
             raise ExtractionFailedError(f"openai parse failed: {exc}") from exc
+        if not completion.choices:
+            raise ExtractionFailedError("openai returned empty choices list")
         msg = completion.choices[0].message
         return (msg.parsed, msg.refusal)
 

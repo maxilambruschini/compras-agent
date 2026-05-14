@@ -35,55 +35,34 @@ def test_save_creates_parent_directories(tmp_path):
     assert (tmp_path / "abc-uuid").is_dir()
 
 
-def test_save_sanitizes_path_traversal(tmp_path):
-    """save(b'x', '../../etc/passwd') must NOT write any file above tmp_path.
+def test_save_rejects_path_traversal(tmp_path):
+    """save(b'x', '../../etc/passwd') raises ValueError on '..' component.
 
-    Per the FINAL contract: ".." segments are dropped. The result is
-    '{tmp_path}/etc/passwd' — NOT any path escaping tmp_path.
+    CR-01: raise immediately on traversal rather than silently rewriting.
     T-02-01 mitigation.
     """
     backend = LocalStorageBackend(root=str(tmp_path))
-    result = backend.save(b"x", "../../etc/passwd")
+    with pytest.raises(ValueError, match="path traversal"):
+        backend.save(b"x", "../../etc/passwd")
 
-    # Verify no file was written ABOVE tmp_path
-    for entry in pathlib.Path(tmp_path).rglob("*"):
-        assert entry.is_relative_to(tmp_path), (
-            f"File was written outside tmp_path: {entry}"
-        )
-
-    # The ".." segments are dropped; remaining parts are "etc" and "passwd"
-    # So the file lands at tmp_path/etc/passwd
-    assert result == "etc/passwd"
-    assert (tmp_path / "etc" / "passwd").exists()
+    # Verify no file was written anywhere under tmp_path
+    assert not list(pathlib.Path(tmp_path).rglob("*"))
 
 
 def test_save_with_uuid_prefix_and_traversal_filename(tmp_path):
-    """save(b'x', 'uuid-xxx/../../bad') drops both '..' segments.
+    """save(b'x', 'uuid-xxx/../../bad') raises ValueError on '..' component.
 
-    Result: 'uuid-xxx/bad' is written to '{tmp_path}/uuid-xxx/bad'.
-    No file resolves above tmp_path.
+    CR-01: raise immediately when '..' is detected anywhere in the path.
     """
     backend = LocalStorageBackend(root=str(tmp_path))
-    result = backend.save(b"x", "uuid-xxx/../../bad")
-
-    # No file above tmp_path
-    for entry in pathlib.Path(tmp_path).rglob("*"):
-        assert entry.is_relative_to(tmp_path), (
-            f"File was written outside tmp_path: {entry}"
-        )
-
-    # After dropping ".." segments from ["uuid-xxx", "..", "..", "bad"],
-    # the safe_parts are ["uuid-xxx", "bad"] — both ".." are dropped.
-    assert result == "uuid-xxx/bad"
-    matches = list(pathlib.Path(tmp_path).rglob("bad"))
-    assert len(matches) == 1
-    assert matches[0].is_relative_to(tmp_path)
+    with pytest.raises(ValueError, match="path traversal"):
+        backend.save(b"x", "uuid-xxx/../../bad")
 
 
 def test_save_rejects_only_dot_segments(tmp_path):
-    """save(b'x', '../..') raises ValueError — no valid component after sanitization."""
+    """save(b'x', '../..') raises ValueError on '..' traversal component."""
     backend = LocalStorageBackend(root=str(tmp_path))
-    with pytest.raises(ValueError, match="no valid component"):
+    with pytest.raises(ValueError, match="path traversal"):
         backend.save(b"x", "../..")
 
 

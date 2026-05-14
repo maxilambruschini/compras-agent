@@ -26,6 +26,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import base64
+import hashlib
 import json
 import os
 import re
@@ -248,7 +249,7 @@ def normalize_value(v: Any) -> Any:
     if v is None:
         return None
     if isinstance(v, str):
-        stripped = v.strip().rstrip(".")
+        stripped = v.strip()
         if stripped == "":
             return None
         if _DECIMAL_PATTERN.match(stripped):
@@ -407,7 +408,7 @@ def cmd_diff(args) -> int:
     settings = get_settings()
 
     report: dict[str, Any] = {
-        "system_prompt": SYSTEM_PROMPT,
+        "system_prompt_sha256": hashlib.sha256(SYSTEM_PROMPT.encode()).hexdigest(),
         "fixtures": {},
         "clean": True,
         "checked": 0,
@@ -492,6 +493,11 @@ def main() -> None:
             "Filter to fixtures whose stem starts with this prefix "
             "(e.g. 'factura_a', 'remito'). Operates on all fixtures if omitted."
         ),
+    )
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Re-generate ground truth even if the JSON file already exists.",
     )
     parser.add_argument(
         "--report-only",

@@ -70,8 +70,15 @@ class LocalStorageBackend:
         normalized = filename.replace("\\", "/")
         parts = normalized.split("/")
 
-        # Step 3: drop empty strings and traversal tokens
-        safe_parts = [p for p in parts if p and p not in (".", "..")]
+        # Step 3: reject traversal tokens immediately; drop empty strings and "."
+        safe_parts = []
+        for p in parts:
+            if p == "..":
+                raise ValueError(
+                    f"filename {filename!r} contains path traversal component '..'"
+                )
+            if p and p != ".":
+                safe_parts.append(p)
 
         # Step 4: nothing left after sanitization
         if not safe_parts:
