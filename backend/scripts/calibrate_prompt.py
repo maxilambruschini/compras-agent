@@ -57,7 +57,7 @@ from app.services.storage import LocalStorageBackend
 # ---------------------------------------------------------------------------
 
 FIXTURE_DIR = Path(__file__).resolve().parent.parent / "tests" / "fixtures"
-FIXTURE_NAMES = ("factura_a", "remito", "lista_informal")
+FIXTURE_PREFIXES = ("factura_a", "factura_b", "factura_c", "remito", "lista_informal")
 REPORT_PATH = FIXTURE_DIR / "calibration_report.json"
 CLAUDE_MODEL = "claude-opus-4-7"  # D-12 — NEVER gpt-4o for ground truth
 GPT_MODEL = "gpt-4o"
@@ -106,15 +106,42 @@ def detect_media_type(path: Path) -> str:
 
 
 def find_fixture(name: str) -> Path | None:
-    """Search FIXTURE_DIR for {name}.jpg, .jpeg, or .png.
+    """Search FIXTURE_DIR for {name}.jpg, .jpeg, or .png (exact name or glob prefix).
 
+    Checks exact match first, then falls back to the first glob match for
+    {name}_*.{ext} — supports descriptive filenames like factura_a_ensincro-07ene26.jpg.
     Returns the first match found, or None if the fixture is absent.
     """
     for ext in SUPPORTED_EXTS:
         candidate = FIXTURE_DIR / f"{name}{ext}"
         if candidate.exists():
             return candidate
+    for ext in SUPPORTED_EXTS:
+        matches = sorted(FIXTURE_DIR.glob(f"{name}_*{ext}"))
+        if matches:
+            return matches[0]
     return None
+
+
+def find_all_fixtures(prefix: str | None = None) -> list[Path]:
+    """Return all fixture image paths, optionally filtered by tipo prefix.
+
+    Discovers every file in FIXTURE_DIR whose stem starts with a known
+    FIXTURE_PREFIX and whose extension is in SUPPORTED_EXTS. Excludes
+    ground-truth JSON files and non-image files automatically.
+
+    Args:
+        prefix: if given, only return fixtures whose stem starts with this
+                prefix (e.g. "factura_a"). If None, return all fixtures.
+    """
+    results: list[Path] = []
+    prefixes = (prefix,) if prefix else FIXTURE_PREFIXES
+    for p in sorted(FIXTURE_DIR.iterdir()):
+        if p.suffix.lower() not in SUPPORTED_EXTS:
+            continue
+        if any(p.stem.startswith(pfx) for pfx in prefixes):
+            results.append(p)
+    return results
 
 
 # ---------------------------------------------------------------------------
@@ -323,10 +350,11 @@ def diff_invoice(ground_truth: dict, extracted: dict, path: str = "") -> list[st
 
 
 def cmd_generate_ground_truth(args) -> int:
-    """Generate {fixture}_ground_truth.json for each available fixture.
+    """Generate {stem}_ground_truth.json for each available fixture image.
 
     Uses Claude Opus 4.7 (CLAUDE_MODEL) — never gpt-4o (D-12).
-    Writes JSON files to FIXTURE_DIR. Skips fixtures with no image on disk.
+    Discovers all fixture images whose stem starts with a known FIXTURE_PREFIX.
+    Skips any image that already has a ground-truth file (pass --overwrite to force).
 
     Returns exit code 0 on success (skips are not failures).
     """
@@ -336,17 +364,19 @@ def cmd_generate_ground_truth(args) -> int:
         ExtractedInvoice.model_json_schema(), indent=2, ensure_ascii=False
     )
 
-    names = [args.fixture] if args.fixture else list(FIXTURE_NAMES)
+    fixtures = find_all_fixtures(prefix=args.fixture) if args.fixture else find_all_fixtures()
+    if not fixtures:
+        print(f"[SKIP] no fixture images found in {FIXTURE_DIR}", file=sys.stderr)
+        return 2
 
-    for name in names:
-        path = find_fixture(name)
-        if path is None:
-            print(f"[SKIP] {name}: no image file found in {FIXTURE_DIR}")
+    for path in fixtures:
+        out = FIXTURE_DIR / f"{path.stem}_ground_truth.json"
+        if out.exists() and not getattr(args, "overwrite", False):
+            print(f"[SKIP] {path.name}: ground truth already exists ({out.name})")
             continue
 
-        print(f"[...] generating ground truth for {name} ({path.name}) ...")
+        print(f"[...] generating ground truth for {path.name} ...")
         data = generate_ground_truth(path, schema_json)
-        out = FIXTURE_DIR / f"{name}_ground_truth.json"
         out.write_text(json.dumps(data, indent=2, ensure_ascii=False))
         print(f"[OK] wrote {out}")
 
@@ -359,10 +389,9 @@ def cmd_generate_ground_truth(args) -> int:
 
 
 def cmd_diff(args) -> int:
-    """Compare GPT-4o extractions against Claude-generated ground truth.
+    """Compare GPT-4o extractions against Opus-generated ground truth.
 
-    For each available fixture:
-    - Loads {name}_ground_truth.json (must exist — run --generate-ground-truth first).
+    For each fixture image that has a corresponding {stem}_ground_truth.json:
     - Runs GPT-4o extraction via ExtractionService using the current SYSTEM_PROMPT.
     - Diffs extracted dict against ground truth field by field.
 
@@ -384,30 +413,24 @@ def cmd_diff(args) -> int:
         "checked": 0,
     }
 
-    names = [args.fixture] if args.fixture else list(FIXTURE_NAMES)
+    fixtures = find_all_fixtures(prefix=args.fixture) if args.fixture else find_all_fixtures()
 
-    for name in names:
-        path = find_fixture(name)
-        if path is None:
-            report["fixtures"][name] = {"status": "skip_no_image"}
-            continue
-
-        gt_path = FIXTURE_DIR / f"{name}_ground_truth.json"
+    for path in fixtures:
+        gt_path = FIXTURE_DIR / f"{path.stem}_ground_truth.json"
         if not gt_path.exists():
-            report["fixtures"][name] = {
+            report["fixtures"][path.stem] = {
                 "status": "skip_no_ground_truth",
                 "hint": "run --generate-ground-truth first",
             }
-            report["clean"] = False
             continue
 
-        print(f"[...] running GPT-4o extraction for {name} ...")
+        print(f"[...] running GPT-4o extraction for {path.name} ...")
         extracted = asyncio.run(run_gpt4o_extraction(path, settings))
         ground_truth = json.loads(gt_path.read_text())
 
         diffs = diff_invoice(ground_truth, extracted)
         report["checked"] += 1
-        report["fixtures"][name] = {
+        report["fixtures"][path.stem] = {
             "status": "checked",
             "diff_count": len(diffs),
             "diffs": diffs,
@@ -415,11 +438,11 @@ def cmd_diff(args) -> int:
 
         if diffs:
             report["clean"] = False
-            print(f"[DIFF {len(diffs)}] {name}: {len(diffs)} diff(s) found")
+            print(f"[DIFF {len(diffs)}] {path.stem}: {len(diffs)} diff(s) found")
             for diff_line in diffs:
                 print(f"  - {diff_line}")
         else:
-            print(f"[OK] {name}: clean")
+            print(f"[OK] {path.stem}: clean")
 
     REPORT_PATH.write_text(json.dumps(report, indent=2, ensure_ascii=False))
     print(f"\ncalibration_report.json: {REPORT_PATH}")
@@ -456,8 +479,10 @@ def main() -> None:
         "--fixture",
         type=str,
         default=None,
-        choices=FIXTURE_NAMES,
-        help="Operate on a single fixture instead of all three.",
+        help=(
+            "Filter to fixtures whose stem starts with this prefix "
+            "(e.g. 'factura_a', 'remito'). Operates on all fixtures if omitted."
+        ),
     )
     parser.add_argument(
         "--report-only",

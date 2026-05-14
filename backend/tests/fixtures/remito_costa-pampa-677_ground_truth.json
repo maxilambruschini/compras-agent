@@ -1,0 +1,13 @@
+{
+  "tipo_comprobante": "REMITO",
+  "numero_documento": "0002-00000677",
+  "proveedor": null,
+  "fecha": "2026-02-04",
+  "cuit_proveedor": null,
+  "cae": null,
+  "fecha_vencimiento_cae": null,
+  "line_items": [
+    {"descripcion": "COSTA & PAMPA CHARDONNAY (6)", "codigo_sku": "2563", "bultos": 1.0, "unidades_por_bulto": 6.0, "precio_unitario_sin_iva": 16569.01, "descuento_pct": 20.0, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "COSTA & PAMPA SAUV BLANC (6)", "codigo_sku": "2562", "bultos": 1.0, "unidades_por_bulto": 6.0, "precio_unitario_sin_iva": 16569.01, "descuento_pct": 20.0, "iva_rate": null, "percepciones_iibb": null}
+  ]
+}

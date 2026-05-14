@@ -1,0 +1,32 @@
+{
+  "tipo_comprobante": "REMITO",
+  "numero_documento": "688-10/13",
+  "proveedor": "PUERTO TRES CRUCEROS S.R.L.",
+  "fecha": "2026-01-07",
+  "cuit_proveedor": "30-71619227-6",
+  "cae": null,
+  "fecha_vencimiento_cae": null,
+  "line_items": [
+    {"descripcion": "TABLETA CLASICA 25 GS X 144 UN", "codigo_sku": "41", "bultos": 38.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 51000.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "TABLETA CLASICA 25 GS TANGO X 144 UN", "codigo_sku": "98", "bultos": 40.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 57000.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "TABLETA SUAVE 25 GS X 144 UNI", "codigo_sku": "42", "bultos": 48.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 51000.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "TABLETA SUAVE 25 GS TANGO X 144 UNI", "codigo_sku": "23", "bultos": 15.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 57000.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "TABLETA COCO 25 GRS", "codigo_sku": "67", "bultos": 8.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 51000.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "DOYPACK TRAVEL MIX 20 UNIDADES", "codigo_sku": "19", "bultos": 10.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 66000.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "CAJA DE REGALO 8 x 16 x 25 GRS", "codigo_sku": "12", "bultos": 30.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 53000.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "TORTA CLASICA 300 GRS", "codigo_sku": "71", "bultos": 13.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 35500.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "TORTA SUAVE 300 GRS", "codigo_sku": "72", "bultos": 16.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 35500.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "SNACK VAUQUITA x 250 GRS", "codigo_sku": "69", "bultos": 67.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 32500.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "SNACK VAUQUITA 100 GRS", "codigo_sku": "95", "bultos": 21.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 22000.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "TABLETA CLASICA 80 GRS", "codigo_sku": "40", "bultos": 32.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 18500.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "TABLETA SPLIT 80 GRS", "codigo_sku": "86", "bultos": 5.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 18500.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "TABLETA SUAVE 80 GRS", "codigo_sku": "36", "bultos": 17.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 18500.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "TABLETA COCO 80 GRS", "codigo_sku": "91", "bultos": 14.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 18500.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "TABLETA CLASICA XL 140 GRS", "codigo_sku": "03", "bultos": 3.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 33500.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "TABLETA SUAVE XL 140 GRS", "codigo_sku": "13", "bultos": 14.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 33500.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "TABLETA COCO XL 140 GRS", "codigo_sku": "92", "bultos": 4.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 33500.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "ALFAJOR ARROZ EXTREMO 45 GRS", "codigo_sku": "77", "bultos": 15.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 16000.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "DULCE DE LECHE FAMILIAR 400 GRS", "codigo_sku": "09", "bultos": 28.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 29000.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "DULCE DE LECHE x 1 KG (CARTON)", "codigo_sku": "04", "bultos": 25.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 34500.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null}
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "tipo_comprobante": "LISTA_INFORMAL",
+  "numero_documento": null,
+  "proveedor": "MONJE NEGRO ALFAJORES",
+  "fecha": "2025-12-12",
+  "cuit_proveedor": null,
+  "cae": null,
+  "fecha_vencimiento_cae": null,
+  "line_items": [
+    {"descripcion": "Alfajores Monje Negro - Chocolate x12", "codigo_sku": null, "bultos": 0.50, "unidades_por_bulto": 12.0, "precio_unitario_sin_iva": 8830.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "Alfajores Monje Negro - Blanco x12", "codigo_sku": null, "bultos": 0.50, "unidades_por_bulto": 12.0, "precio_unitario_sin_iva": 8830.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "Alfajores Monje Negro - Trad. & Blanco x6 (Caminito)", "codigo_sku": null, "bultos": 10.0, "unidades_por_bulto": 6.0, "precio_unitario_sin_iva": 4820.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "Alfajores Monje Negro - Trad. & Blanco x6 (Tango)", "codigo_sku": null, "bultos": 5.0, "unidades_por_bulto": 6.0, "precio_unitario_sin_iva": 5300.00, "descuento_pct": null, "iva_rate": null, "percepciones_iibb": null}
+  ]
+}
