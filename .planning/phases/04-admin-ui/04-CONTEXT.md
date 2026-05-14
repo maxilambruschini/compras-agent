@@ -66,10 +66,23 @@ Deliverables:
 
 - **D-14:** `pending_review` rows in the list are visually distinguished — highlighted background or a colored badge on the status column. Exact color TBD by planner (e.g., amber/yellow for "needs attention").
 
+### Styling and Component Library
+
+- **D-15:** Use **Tailwind CSS v4** as the styling framework. Install via `npm install tailwindcss @tailwindcss/vite` and configure in `vite.config.ts`. Use `@import "tailwindcss"` in `index.css` (v4 CSS-first config — no `tailwind.config.js` needed). All component styling uses Tailwind utility classes; the existing CSS custom property tokens in `index.css` are kept and extended alongside Tailwind.
+- **D-16:** Use **shadcn/ui** for foundational components. Initialize with `npx shadcn@latest init` (choose "default" style, CSS variables enabled). Add only the components actually needed for this phase — do not bulk-install. Planned shadcn components: `Button`, `Dialog`, `Badge`, `Input`, `Label`, `Select`, `Table`, `Alert`, `Separator`. Custom components (InvoiceTable row behavior, ImagePanel, DeleteConfirmation inline strip, Pagination) are hand-written on top of shadcn primitives and Tailwind.
+
+### Responsive Design
+
+- **D-17:** The UI must be **fully responsive** — it must work on both desktop (full-width browser) and mobile phones. Tailwind breakpoints to use: `sm` (640px), `md` (768px), `lg` (1024px). Key adaptations:
+  - **List page:** On mobile (`< md`), the filter toolbar stacks vertically; the invoice table collapses to show only Proveedor, Estado, and Total columns (hide Tipo, Número, Fecha on small screens).
+  - **Detail page:** On mobile (`< md`), the two-column grid becomes a single column — DataPanel stacks above ImagePanel. The image panel is not sticky on mobile.
+  - **Edit modals:** Full-width on mobile (`w-full mx-4`); constrained max-width on desktop (560px / 640px as specified in spacing).
+  - **ActionBar buttons:** Full-width on mobile (`w-full`), inline on desktop.
+  - Touch targets: minimum 44px height on all interactive elements (already in spacing exceptions).
+
 ### Claude's Discretion
 
 - Exact component file structure and folder layout (the planner follows existing `frontend/src/` conventions — currently just App.tsx)
-- Which UI component library or CSS approach to use (no library is installed; planner may choose Tailwind, a headless component lib, or plain CSS — keep it minimal for v1)
 - Pagination implementation detail (offset-based vs cursor-based; offset is simpler for v1)
 - Whether to add an optimistic update on Confirm/Reject or just re-fetch after success
 - Internal structuring of TanStack Query hooks (e.g., `useInvoices`, `useInvoice` — standard conventions)

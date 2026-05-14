@@ -3,7 +3,7 @@ phase: 4
 slug: admin-ui
 status: approved
 shadcn_initialized: false
-preset: none
+preset: default
 created: 2026-05-14
 ---
 
@@ -17,13 +17,19 @@ created: 2026-05-14
 
 | Property | Value |
 |----------|-------|
-| Tool | none |
-| Preset | not applicable |
-| Component library | none — plain CSS custom properties (extends existing `index.css` token set) |
-| Icon library | none — use Unicode symbols or inline SVG for v1 (no icon library install required) |
-| Font | system-ui, 'Segoe UI', Roboto, sans-serif (existing `--sans` variable) |
+| Tool | Tailwind CSS v4 |
+| Preset | shadcn/ui default (CSS variables enabled) |
+| Component library | shadcn/ui — `Button`, `Dialog`, `Badge`, `Input`, `Label`, `Select`, `Table`, `Alert`, `Separator` |
+| Icon library | lucide-react (installed as shadcn peer dep — use sparingly, prefer text labels) |
+| Font | system-ui, 'Segoe UI', Roboto, sans-serif (existing `--sans` variable, kept in `index.css`) |
 
-**Rationale (source: CONTEXT.md — Claude's Discretion):** No component library is installed; planner chose to keep v1 minimal. The existing `index.css` already declares a CSS custom property token system. Phase 4 extends that system with admin-specific tokens rather than introducing a new framework. No shadcn initialization — React/Vite project confirmed no `components.json`.
+**Installation (planner must include as Wave 1 tasks):**
+- `npm install tailwindcss @tailwindcss/vite` + configure `vite.config.ts` with `@tailwindcss/vite` plugin
+- `npx shadcn@latest init` — style: default, CSS variables: yes, tailwind config: auto (v4)
+- Add individual components: `npx shadcn@latest add button dialog badge input label select table alert separator`
+- Do NOT bulk-install all shadcn components — only the list above
+
+**Rationale (source: CONTEXT.md D-15, D-16):** Tailwind CSS v4 provides utility-first styling for the dense admin layout (tables, forms, modals). shadcn/ui provides accessible, unstyled-first primitives for Dialog (edit modals), Button variants (primary/destructive/outline), Badge (status chips), Table, and form controls — eliminating hand-rolling of focus management and ARIA for those components. Custom components (InvoiceTable row behavior, ImagePanel, DeleteConfirmation strip, Pagination) are hand-written on top of these primitives.
 
 ---
 
@@ -115,40 +121,39 @@ Accent is NOT used for: table row hover, column headers, status badges, destruct
 
 ## Component Inventory
 
-These are the UI components the executor must build. All are plain React + CSS — no library installs.
+These are the UI components the executor must build. Components marked **[shadcn]** use a shadcn primitive as their base; others are hand-written with Tailwind utilities.
 
 ### Invoice List Page (`/`)
 
-| Component | Description |
-|-----------|-------------|
-| `InvoiceListPage` | Route root; renders toolbar + table + pagination |
-| `FilterToolbar` | Row containing: status select, proveedor text input, fecha-from/to date inputs, search text input, "Filtrar" button |
-| `InvoiceTable` | `<table>` with columns: Proveedor, Tipo, Número, Fecha, Estado, Total; pending_review rows get `--pending-bg` background |
-| `StatusBadge` | Pill badge: `auto_saved` = gray, `pending_review` = amber (`--pending-badge`), `confirmed` = green, `rejected` = red |
-| `Pagination` | "Anterior / Siguiente" controls + "Página X de Y" label |
+| Component | Base | Description |
+|-----------|------|-------------|
+| `InvoiceListPage` | hand-written | Route root; renders toolbar + table + pagination |
+| `FilterToolbar` | `Input`, `Select`, shadcn | Row: status Select, proveedor Input, fecha-from/to date Inputs, search Input, "Filtrar" Button |
+| `InvoiceTable` | `Table` shadcn | shadcn Table primitives for structure; `pending_review` rows get `bg-amber-50` Tailwind class |
+| `StatusBadge` | `Badge` shadcn | shadcn Badge with variant prop: `auto_saved` = secondary, `pending_review` = custom amber, `confirmed` = custom green, `rejected` = destructive |
+| `Pagination` | hand-written | "Anterior / Siguiente" using shadcn `Button` variant="outline"; "Página X de Y" plain text |
 
 ### Invoice Detail Page (`/invoices/:id`)
 
-| Component | Description |
-|-----------|-------------|
-| `InvoiceDetailPage` | Route root; two-column grid layout |
-| `DataPanel` | Left column: InvoiceHeader + ActionBar + LineItemsTable |
-| `ImagePanel` | Right column: `<img>` or `<embed>` (PDF) from `/images/{filename}`; sticky positioned |
-| `InvoiceHeader` | Shows all document-level fields in a definition list; "Editar documento" button top-right |
-| `ActionBar` | Shows "Confirmar" + "Rechazar" buttons ONLY when `status === "pending_review"`; shows "Elimininar" (delete) always |
-| `LineItemsTable` | Table of extracted line items; each row has an "Editar" button |
-| `EditDocumentModal` | Modal with form pre-filled with document-level fields (source: CONTEXT.md D-01) |
-| `EditLineItemModal` | Modal with form pre-filled with single line-item fields (source: CONTEXT.md D-01) |
-| `DeleteConfirmation` | Inline confirmation strip (not a modal): "¿Confirmar eliminación? Esta acción no puede deshacerse." + "Sí, eliminar" / "Cancelar" buttons |
+| Component | Base | Description |
+|-----------|------|-------------|
+| `InvoiceDetailPage` | hand-written | Route root; Tailwind `grid grid-cols-2 gap-8` layout |
+| `DataPanel` | hand-written | Left column: InvoiceHeader + ActionBar + LineItemsTable |
+| `ImagePanel` | hand-written | Right column: `<img>` or `<embed>` (PDF); `sticky top-6`, `w-full max-h-[80vh] object-contain` |
+| `InvoiceHeader` | hand-written | Definition list of document fields; shadcn `Button` variant="outline" for "Editar documento" top-right |
+| `ActionBar` | shadcn `Button` | "Confirmar" = `Button` default (accent blue); "Rechazar" = `Button` variant="outline"; "Eliminar" = `Button` variant="destructive"; Confirm/Reject shown only when `status === "pending_review"` |
+| `LineItemsTable` | `Table` shadcn | shadcn Table; each row has `Button` variant="ghost" size="sm" for "Editar" |
+| `EditDocumentModal` | `Dialog` shadcn | shadcn Dialog wrapping form with shadcn `Input`, `Label`, `Select`; pre-filled from cache (D-01) |
+| `EditLineItemModal` | `Dialog` shadcn | shadcn Dialog wrapping line-item form; same pattern as EditDocumentModal (D-01) |
+| `DeleteConfirmation` | hand-written | Inline strip (not a Dialog); shadcn `Button` variant="destructive" for "Sí, eliminar", variant="ghost" for "Cancelar" |
 
 ### Shared Components
 
-| Component | Description |
-|-----------|-------------|
-| `Modal` | Backdrop + centered panel; closes on Escape key and backdrop click; traps focus |
-| `FormField` | Label + input wrapper with consistent 8px label-to-input gap |
-| `LoadingSpinner` | Simple CSS spinner; used inside table area and modal save button |
-| `ErrorBanner` | Red-bordered banner; used for fetch errors and mutation failures |
+| Component | Base | Description |
+|-----------|------|-------------|
+| `FormField` | `Label` + `Input` shadcn | Label + input wrapper; shadcn Label + Input; `space-y-2` gap |
+| `ErrorBanner` | `Alert` shadcn | shadcn Alert with variant="destructive"; used for fetch errors and mutation failures |
+| `LoadingSpinner` | hand-written | Simple Tailwind `animate-spin` div; used inside table area and on Button during mutation |
 
 ---
 
@@ -246,6 +251,39 @@ These are the UI components the executor must build. All are plain React + CSS �
 
 ---
 
+## Responsive Design Contract
+
+**Breakpoints (Tailwind defaults):** `sm` = 640px, `md` = 768px, `lg` = 1024px. Mobile-first: base styles target mobile, `md:` prefix adds desktop overrides.
+
+### List Page
+
+| Element | Mobile (< md) | Desktop (≥ md) |
+|---------|--------------|----------------|
+| FilterToolbar | `flex flex-col gap-2` — inputs stack vertically, "Filtrar" full-width | `flex flex-row flex-wrap gap-2` — single row |
+| InvoiceTable columns | Proveedor, Estado, Total only (`hidden md:table-cell` on Tipo, Número, Fecha) | All 6 columns visible |
+| Table cell padding | `px-3 py-2` | `px-4 py-3` |
+
+### Detail Page
+
+| Element | Mobile (< md) | Desktop (≥ md) |
+|---------|--------------|----------------|
+| Page grid | `grid grid-cols-1` — DataPanel then ImagePanel stacked | `grid grid-cols-2 gap-8` |
+| ImagePanel position | static (scrolls with page) | `sticky top-6` |
+| ActionBar buttons | `flex flex-col w-full gap-2` | `flex flex-row gap-3` |
+
+### Modals
+
+| Element | Mobile (< md) | Desktop (≥ md) |
+|---------|--------------|----------------|
+| Dialog width | `w-full mx-4` (near full-screen) | `max-w-[560px]` / `max-w-[640px]` |
+| Dialog position | bottom-anchored or centered | centered |
+
+### Touch Targets
+
+All interactive elements (buttons, table rows, filter inputs, pagination controls) maintain a minimum height of **44px** on all screen sizes — enforced via `min-h-[44px]` Tailwind class where shadcn defaults are smaller.
+
+---
+
 ## Copywriting Contract
 
 | Element | Copy (Spanish — the system operates in Spanish) |
@@ -310,12 +348,12 @@ These are the UI components the executor must build. All are plain React + CSS �
 
 ## Registry Safety
 
-| Registry | Blocks Used | Safety Gate |
-|----------|-------------|-------------|
-| shadcn official | none — shadcn not initialized | not applicable |
+| Registry | Components Used | Safety Gate |
+|----------|----------------|-------------|
+| shadcn official | `Button`, `Dialog`, `Badge`, `Input`, `Label`, `Select`, `Table`, `Alert`, `Separator` | official registry only — safe |
 | third-party | none | not applicable |
 
-No third-party component registries used. All components are hand-written. Registry safety gate: not required.
+**shadcn install rule:** Add components one at a time via `npx shadcn@latest add <component>`. Do NOT copy-paste component source from unofficial sources. Do NOT install third-party shadcn registries. lucide-react (shadcn peer dep) is the only additional package.
 
 ---
 
@@ -335,7 +373,8 @@ No third-party component registries used. All components are hand-written. Regis
 | TanStack Query v5 | CONTEXT.md D-11 |
 | Admin router structure | CONTEXT.md D-13 |
 | `pending_review` amber/yellow highlight | CONTEXT.md D-14 |
-| No component library — minimal v1 | CONTEXT.md (Claude's Discretion) |
+| Tailwind CSS v4 as styling framework | CONTEXT.md D-15 |
+| shadcn/ui for foundational components | CONTEXT.md D-16 |
 | Pagination offset-based | CONTEXT.md (Claude's Discretion) |
 | Existing CSS custom properties | `frontend/src/index.css` (detected) |
 | Spanish UI language | REQUIREMENTS.md (WA-02: rejection message in Spanish) + project domain |
