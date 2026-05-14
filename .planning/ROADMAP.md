@@ -49,7 +49,7 @@ Plans:
 **Plans:** 3 plans
 Plans:
 **Wave 1**
-- [ ] 02-01-PLAN.md — Wave 0 tests + StorageBackend + ExtractionService skeleton + debug-gated /extraction/test router
+- [x] 02-01-PLAN.md — Wave 0 tests + StorageBackend + ExtractionService skeleton + debug-gated /extraction/test router
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 02-02-PLAN.md — SYSTEM_PROMPT constant + hardened error semantics + EXT-01..EXT-07 + VAL-04 + VAL-05 mocked tests + integration marker
