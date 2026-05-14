@@ -53,7 +53,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [x] 02-02-PLAN.md — SYSTEM_PROMPT constant + hardened error semantics + EXT-01..EXT-07 + VAL-04 + VAL-05 mocked tests + integration marker
-- [ ] 02-03-PLAN.md — calibrate_prompt.py (Claude Opus 4.7 ground truth + GPT-4o diff loop) + fixtures README + D-11 human done-gate
+- [x] 02-03-PLAN.md — calibrate_prompt.py (Claude Opus 4.7 ground truth + GPT-4o diff loop) + fixtures README + D-11 human done-gate
 
 ### Phase 3: WhatsApp Pipeline
 **Goal**: An allowlisted employee can send an invoice photo on WhatsApp and receive a reply; the invoice data is stored in the database within seconds
