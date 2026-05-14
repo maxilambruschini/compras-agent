@@ -1,11 +1,12 @@
-"""ExtractionService — GPT-4o vision extraction skeleton.
+"""ExtractionService — GPT-4o vision extraction service.
 
-Real prompt + error semantics enriched in Plan 02.
+System prompt calibrated in Plan 02; further refined in Plan 03's calibration loop.
 
 Citations:
 - D-01: Confidence formula — non_null(tipo, numero, proveedor, fecha) / 4
 - D-03: Status thresholds — score >= threshold → 'auto_saved' else 'pending_review'
 - D-04: ExtractionService.extract(image_bytes, filename) -> ExtractionResult interface
+- D-10: Initial prompt minimal — calibrate iteratively in Plan 03
 - T-02-02: OpenAI API key NEVER logged — AsyncOpenAI client holds it; service never logs it
 """
 from __future__ import annotations
@@ -24,6 +25,24 @@ from app.models.extraction import ExtractedInvoice
 from app.services.storage import StorageBackend
 
 log = structlog.get_logger()
+
+# ---------------------------------------------------------------------------
+# System prompt (module-level constant — Plan 03's calibration script reads and
+# may propose edits to this value; ExtractionService references SYSTEM_PROMPT
+# directly so the calibration loop can mutate this constant only without
+# touching ExtractionService internals).
+# ---------------------------------------------------------------------------
+
+SYSTEM_PROMPT: str = (
+    "You are extracting structured data from photographs of Argentine purchase documents "
+    "(Factura A, Factura B, Factura C, Remito, Lista informal). "
+    "Extract every visible field into the provided schema. "
+    "Use null (not empty string, not a guess) whenever a field is not clearly visible "
+    "or not present on the document. "
+    "tipo_comprobante must be one of FACTURA_A, FACTURA_B, FACTURA_C, REMITO, "
+    "LISTA_INFORMAL, UNKNOWN. "
+    "Line items: one entry per product row visible on the document; never invent rows."
+)
 
 
 # ---------------------------------------------------------------------------
@@ -104,14 +123,10 @@ class ExtractionService:
 
     AsyncOpenAI client is constructed in the router's get_extraction_service()
     dependency (the SOLE construction site) — never at module import time (Pitfall 3).
-    """
 
-    SYSTEM_PROMPT: str = (
-        "You are an invoice extraction system. Extract the invoice fields exactly as visible. "
-        "Return null for any field that is not present or is ambiguous."
-    )
-    # NOTE: SYSTEM_PROMPT is an intentional placeholder per D-10 (start minimal, calibrate
-    # iteratively). Plan 02 may refine this prompt based on calibration results.
+    The module-level SYSTEM_PROMPT constant is used by _call_gpt4o; Plan 03's
+    calibration script may edit its value without touching ExtractionService.
+    """
 
     def __init__(
         self,
@@ -131,32 +146,40 @@ class ExtractionService:
 
         Exactly one of (parsed, refusal) will be non-None on a well-formed response.
         Check refusal BEFORE accessing parsed (Pitfall 2).
+
+        Uses module-level SYSTEM_PROMPT — Plan 03's calibration loop edits that
+        constant without touching this method.
         """
         b64 = base64.b64encode(image_bytes).decode("utf-8")
         # NOTE: MIME type hardcoded as image/jpeg. OpenAI vision accepts PNG/JPEG bytes
         # labeled as image/jpeg in practice (verified against fixtures in Plan 03). A
         # follow-up may wire detect_media_type() from scripts/calibrate_prompt.py — see
         # RESEARCH.md open question #1. (Addresses review MEDIUM #5.)
-        completion = await self._client.chat.completions.parse(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": self.SYSTEM_PROMPT},
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": "Extract all invoice fields from this image.",
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": {"url": f"data:image/jpeg;base64,{b64}"},
-                        },
-                    ],
-                },
-            ],
-            response_format=ExtractedInvoice,
-        )
+        try:
+            completion = await self._client.chat.completions.parse(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Extract all invoice fields from this image.",
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {"url": f"data:image/jpeg;base64,{b64}"},
+                            },
+                        ],
+                    },
+                ],
+                response_format=ExtractedInvoice,
+            )
+        except Exception as exc:
+            # Network errors, AuthenticationError, etc. — never log secrets (T-02-02)
+            log.error("extraction.failed", error=str(exc), stage="openai_parse")
+            raise ExtractionFailedError(f"openai parse failed: {exc}") from exc
         msg = completion.choices[0].message
         return (msg.parsed, msg.refusal)
 
@@ -183,9 +206,13 @@ class ExtractionService:
             # Step 1-3: store the image before extraction
             invoice_uuid = str(uuid.uuid4())
             safe_basename = os.path.basename(filename)
-            relative_path = self._storage.save(
-                image_bytes, f"{invoice_uuid}/{safe_basename}"
-            )
+            try:
+                relative_path = self._storage.save(
+                    image_bytes, f"{invoice_uuid}/{safe_basename}"
+                )
+            except ValueError as exc:
+                log.error("extraction.failed", error=str(exc), stage="storage_save")
+                raise ExtractionFailedError(f"storage rejected filename: {exc}") from exc
 
             # Step 4: call GPT-4o
             parsed, refusal = await self._call_gpt4o(image_bytes)
