@@ -69,7 +69,10 @@ Plans:
   6. Inbound webhook requests with invalid HMAC-SHA256 signatures are rejected with HTTP 401; valid signatures are processed normally
 **Plans:** 2 plans
 Plans:
+**Wave 1**
 - [ ] 03-01-PLAN.md — WhatsAppProvider Protocol + TwilioProvider + webhook (signature, allowlist, ack, asyncio.create_task hook) + Alembic UNIQUE migration
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 03-02-PLAN.md — InvoiceService + process_invoice background pipeline (extract, dedup, save, summary/duplicate/error reply) + live Twilio sandbox verification
 
 ### Phase 4: Admin UI

@@ -664,7 +664,7 @@ def is_supported_media(content_type: str | None) -> bool:
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **DB-level UNIQUE constraint on NULL-containing rows**
    - What we know: Postgres UNIQUE ignores NULLs; two rows with both fields NULL will both insert.
