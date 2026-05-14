@@ -87,8 +87,18 @@ Plans:
   4. Any extracted field (document-level or line-item) can be edited and saved directly in the UI
   5. An invoice record can be deleted from the UI; the original file on disk is retained
   6. Pending review invoices are visually distinguished (highlighted row or badge) in the list view
-**Plans**: TBD
-**UI hint**: yes
+**Plans:** 5 plans
+Plans:
+**Wave 1** *(parallel — no shared files)*
+- [ ] 04-01-PLAN.md — Wave 0 test stubs + admin.py skeleton + schemas + 7 API endpoints + CORS + pytest suite (UI-01, UI-02, UI-03, UI-04, UI-05)
+- [ ] 04-02-PLAN.md — Tailwind v4 install + shadcn init + 9 components + vite.config.ts + index.css + tsconfig alias (UI-01, UI-06)
+
+**Wave 2** *(parallel — no shared files; blocked on Wave 1)*
+- [ ] 04-03-PLAN.md — TypeScript types + API client + hooks + shared components + InvoiceListPage + App router (UI-01, UI-02, UI-06)
+- [ ] 04-04-PLAN.md — InvoiceDetailPage + DataPanel + ImagePanel + ActionBar + edit modals + delete flow (UI-03, UI-04, UI-05)
+
+**Wave 3** *(blocked on Wave 2)*
+- [ ] 04-05-PLAN.md — Human verification of all 6 UI flows + full backend suite gate (UI-01 through UI-06)
 
 ## Progress
 
@@ -100,4 +110,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Foundation | 2/2 | Complete   | 2026-05-13 |
 | 2. Extraction Pipeline | 0/TBD | Not started | - |
 | 3. WhatsApp Pipeline | 2/2 | Complete    | 2026-05-14 |
-| 4. Admin UI | 0/TBD | Not started | - |
+| 4. Admin UI | 0/5 | Not started | - |
