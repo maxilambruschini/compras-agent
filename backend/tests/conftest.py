@@ -7,11 +7,26 @@
   Base.metadata.create_all on entry and drop_all on exit.
 - db_session: function-scoped AsyncSession yielded from the test engine.
 """
+import os
+
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.db.models import Base
+
+# Capture real API key before env_setup patches it — used by integration tests.
+_REAL_OPENAI_API_KEY: str = os.environ.get("OPENAI_API_KEY", "")
+
+
+@pytest.fixture(scope="session")
+def real_openai_api_key() -> str:
+    """Return the OPENAI_API_KEY that was set BEFORE env_setup patched the environment.
+
+    Integration tests must use this fixture rather than os.environ['OPENAI_API_KEY']
+    to avoid receiving the test-stub value injected by env_setup.
+    """
+    return _REAL_OPENAI_API_KEY
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 

@@ -1,0 +1,13 @@
+{
+  "tipo_comprobante": "REMITO",
+  "numero_documento": "0002-00000675",
+  "proveedor": null,
+  "fecha": "2026-02-04",
+  "cuit_proveedor": null,
+  "cae": null,
+  "fecha_vencimiento_cae": null,
+  "line_items": [
+    {"descripcion": "SAN TELMO MALBEC (6)", "codigo_sku": "2632", "bultos": 15.0, "unidades_por_bulto": 6.0, "precio_unitario_sin_iva": 3430.04, "descuento_pct": 20.0, "iva_rate": null, "percepciones_iibb": null},
+    {"descripcion": "FERNET BRANCA X 750CC (12)", "codigo_sku": "4174", "bultos": 1.0, "unidades_por_bulto": 12.0, "precio_unitario_sin_iva": 19600.00, "descuento_pct": 10.0, "iva_rate": null, "percepciones_iibb": null}
+  ]
+}

@@ -44,6 +44,13 @@ def create_app() -> FastAPI:
     from app.routers.health import router as health_router
 
     app.include_router(health_router)
+
+    # Debug-only extraction test endpoint (D-05) — not registered in production
+    if settings.debug:
+        from app.routers.extraction import router as extraction_router
+
+        app.include_router(extraction_router, prefix="/extraction", tags=["extraction"])
+
     return app
 
 

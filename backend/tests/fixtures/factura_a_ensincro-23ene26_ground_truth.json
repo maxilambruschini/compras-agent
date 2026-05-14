@@ -1,0 +1,14 @@
+{
+  "tipo_comprobante": "FACTURA_A",
+  "numero_documento": "0010-00065089",
+  "proveedor": "ENSINCRO S.R.L",
+  "fecha": "2026-01-23",
+  "cuit_proveedor": "30-70974857-9",
+  "cae": "86041037564518",
+  "fecha_vencimiento_cae": "2026-02-02",
+  "line_items": [
+    {"descripcion": "BULTO ALF CHOCO NEG 12EX6U RE", "codigo_sku": "PVBULALFCHNEX6R", "bultos": 200.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 73309.09, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO ALF MAICENA 12EX6U REG", "codigo_sku": "PVBULAMDESTU06", "bultos": 160.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 73309.09, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO FRASCO DDL 12 X 450", "codigo_sku": "PVBULDDL450", "bultos": 240.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 40803.17, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null}
+  ]
+}

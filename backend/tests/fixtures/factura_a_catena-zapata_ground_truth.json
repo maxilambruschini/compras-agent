@@ -1,0 +1,17 @@
+{
+  "tipo_comprobante": "FACTURA_A",
+  "numero_documento": "0056-00564120",
+  "proveedor": "BODEGAS ESMERALDA S.A.",
+  "fecha": "2026-02-23",
+  "cuit_proveedor": "30-50258442-8",
+  "cae": "86084918532060",
+  "fecha_vencimiento_cae": "2026-03-05",
+  "line_items": [
+    {"descripcion": "ALAMOS WOTM RESERV MB 23 6X75", "codigo_sku": "3340-23", "bultos": 15.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 59504.13, "descuento_pct": 50.0, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "ALAMOS WOTM RESERV MB 23 6X75", "codigo_sku": "3340-23", "bultos": 3.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 59504.13, "descuento_pct": 0.0, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "NICASIA VI MB RED BLE 24 6X750", "codigo_sku": "420-24-MI", "bultos": 15.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 61983.47, "descuento_pct": 50.0, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "NICASIA VI MB RED BLE 24 6X750", "codigo_sku": "420-24-MI", "bultos": 3.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 61983.47, "descuento_pct": 0.0, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "ALAMOS MOSCATEL DE ALEJANDRIA 6X750", "codigo_sku": "428", "bultos": 10.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 51074.38, "descuento_pct": 50.0, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "ALAMOS MOSCATEL DE ALEJANDRIA 6X750", "codigo_sku": "428", "bultos": 2.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 51074.38, "descuento_pct": 0.0, "iva_rate": 21.0, "percepciones_iibb": null}
+  ]
+}

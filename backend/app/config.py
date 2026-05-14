@@ -8,6 +8,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        extra="ignore",
     )
 
     # Required — no default — app refuses to start if missing (INF-03)
@@ -21,6 +22,7 @@ class Settings(BaseSettings):
     debug: bool = False
     log_level: str = "INFO"
     confidence_threshold: float = 0.85
+    storage_path: str = "/data/invoices"
 
 
 @lru_cache
