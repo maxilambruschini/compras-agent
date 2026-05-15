@@ -62,21 +62,25 @@ export default function FilterToolbar({ onFilter }: FilterToolbarProps) {
         className="min-h-[44px] w-full md:w-auto"
       />
 
-      <Input
-        type="date"
-        value={fechaFrom}
-        onChange={(e) => setFechaFrom(e.target.value)}
-        placeholder="Desde"
-        className="min-h-[44px] w-full md:w-auto"
-      />
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-gray-500 font-medium">Desde</label>
+        <Input
+          type="date"
+          value={fechaFrom}
+          onChange={(e) => setFechaFrom(e.target.value)}
+          className="min-h-[44px] w-full md:w-auto"
+        />
+      </div>
 
-      <Input
-        type="date"
-        value={fechaTo}
-        onChange={(e) => setFechaTo(e.target.value)}
-        placeholder="Hasta"
-        className="min-h-[44px] w-full md:w-auto"
-      />
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-gray-500 font-medium">Hasta</label>
+        <Input
+          type="date"
+          value={fechaTo}
+          onChange={(e) => setFechaTo(e.target.value)}
+          className="min-h-[44px] w-full md:w-auto"
+        />
+      </div>
 
       <Input
         value={q}

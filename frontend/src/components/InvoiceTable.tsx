@@ -11,6 +11,15 @@ import StatusBadge from "./StatusBadge";
 import { formatDate } from "../lib/format";
 import type { InvoiceListItem } from "../types/invoice";
 
+const TIPO_LABELS: Record<string, string> = {
+  FACTURA_A: "Factura A",
+  FACTURA_B: "Factura B",
+  FACTURA_C: "Factura C",
+  NOTA_DEBITO_A: "N. Débito A",
+  NOTA_CREDITO_A: "N. Crédito A",
+  LISTA_INFORMAL: "Lista informal",
+};
+
 interface InvoiceTableProps {
   invoices: InvoiceListItem[];
 }
@@ -46,14 +55,16 @@ export default function InvoiceTable({ invoices }: InvoiceTableProps) {
           invoices.map((invoice) => (
             <TableRow
               key={invoice.id}
-              className={invoice.status === "pending_review" ? "bg-amber-50 cursor-pointer hover:bg-amber-100" : "cursor-pointer hover:bg-gray-50"}
+              className={invoice.status === "pending_review" ? "bg-amber-50 cursor-pointer hover:bg-amber-100 transition-colors" : "cursor-pointer hover:bg-gray-50 transition-colors"}
               onClick={() => navigate("/invoices/" + invoice.id)}
             >
               <TableCell className="font-medium">
                 {invoice.proveedor ?? "—"}
               </TableCell>
               <TableCell className="hidden md:table-cell">
-                {invoice.tipo_comprobante ?? "—"}
+                {invoice.tipo_comprobante
+                  ? (TIPO_LABELS[invoice.tipo_comprobante] ?? invoice.tipo_comprobante)
+                  : "—"}
               </TableCell>
               <TableCell className="hidden md:table-cell">
                 {invoice.numero_documento ?? "—"}

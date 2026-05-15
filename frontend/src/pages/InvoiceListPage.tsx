@@ -13,8 +13,11 @@ export default function InvoiceListPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="px-4 py-3 border-b flex items-center">
-        <h1 className="text-xl font-semibold">Facturas</h1>
+      <header className="px-4 md:px-6 py-3 border-b border-gray-200 bg-white flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">Facturas</h1>
+          <p className="text-xs text-gray-500">Compras Agent</p>
+        </div>
       </header>
 
       <FilterToolbar
