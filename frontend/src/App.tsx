@@ -1,10 +1,19 @@
-function App() {
-  return (
-    <>
-      <h1>Compras Agent</h1>
-      <p>Phase 1 — Walking Skeleton</p>
-    </>
-  )
-}
+import { BrowserRouter, Routes, Route } from "react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import InvoiceListPage from "./pages/InvoiceListPage";
+import InvoiceDetailPage from "./pages/InvoiceDetailPage";
 
-export default App
+const queryClient = new QueryClient();
+
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<InvoiceListPage />} />
+          <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
+        </Routes>
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
+}
