@@ -3,9 +3,10 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
-// REVIEWS.md MEDIUM fix: proxy target reads from env var so this config works
-// both inside Docker (VITE_API_URL=http://backend:8000) and locally (fallback http://localhost:8000)
-const apiTarget = process.env.VITE_API_URL || 'http://localhost:8000'
+// Proxy target uses API_PROXY_TARGET (non-VITE_ prefix = server-side only, never injected
+// into the browser bundle). VITE_API_URL is intentionally left unset so the browser-side
+// BASE_URL resolves to "" and all API calls go through the Vite proxy on the same origin.
+const apiTarget = process.env.API_PROXY_TARGET || 'http://localhost:8000'
 
 // https://vite.dev/config/
 export default defineConfig({
