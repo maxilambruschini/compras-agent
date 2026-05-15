@@ -7,7 +7,10 @@ import type {
   LineItemResponse,
 } from "../types/invoice";
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? "";
+// All API calls are prefixed with /api so the Vite dev server proxy can
+// distinguish them from React Router page routes (e.g. /invoices/:id).
+// The proxy strips /api before forwarding to the backend.
+const BASE_URL = import.meta.env.VITE_API_URL ?? "/api";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {

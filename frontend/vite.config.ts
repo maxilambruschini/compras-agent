@@ -20,10 +20,13 @@ export default defineConfig({
     host: true,
     port: 5173,
     proxy: {
-      '/api': apiTarget,
-      '/health': apiTarget,
-      '/invoices': apiTarget,
-      '/images': apiTarget,
+      // All backend API calls are prefixed with /api in the browser so they
+      // never collide with React Router page routes (e.g. /invoices/:id).
+      // The rewrite strips /api before forwarding to the backend.
+      '/api': {
+        target: apiTarget,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
     },
   },
 })
