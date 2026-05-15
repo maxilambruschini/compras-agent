@@ -98,7 +98,7 @@ export default function FilterToolbar({ onFilter }: FilterToolbarProps) {
 
       <span
         onClick={handleClear}
-        className="text-sm text-blue-600 cursor-pointer self-center"
+        className="text-sm text-blue-600 cursor-pointer self-end pb-[10px]"
       >
         Limpiar filtros
       </span>
