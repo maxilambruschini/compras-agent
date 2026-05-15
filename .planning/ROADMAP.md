@@ -107,7 +107,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 2/2 | Complete   | 2026-05-13 |
-| 2. Extraction Pipeline | 0/TBD | Not started | - |
-| 3. WhatsApp Pipeline | 2/2 | Complete    | 2026-05-14 |
-| 4. Admin UI | 5/5 | Complete   | 2026-05-15 |
+| 1. Foundation | 2/2 | Complete | 2026-05-13 |
+| 2. Extraction Pipeline | 3/3 | Complete | 2026-05-14 |
+| 3. WhatsApp Pipeline | 2/2 | Complete | 2026-05-14 |
+| 4. Admin UI | 5/5 | Complete — PR #3 merged | 2026-05-15 |
