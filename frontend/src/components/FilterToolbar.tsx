@@ -41,7 +41,7 @@ export default function FilterToolbar({ onFilter }: FilterToolbarProps) {
   }
 
   return (
-    <div className="flex flex-col md:flex-row md:flex-wrap gap-2 p-4 bg-gray-50 border-b border-gray-200">
+    <div className="flex flex-col md:flex-row md:flex-wrap md:items-end gap-2 p-4 bg-gray-50 border-b border-gray-200">
       <Select value={status} onValueChange={setStatus}>
         <SelectTrigger className="min-h-[44px] w-full md:w-auto">
           <SelectValue placeholder="Todos los estados" />
