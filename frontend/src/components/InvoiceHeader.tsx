@@ -16,7 +16,7 @@ export default function InvoiceHeader({ invoice, onEditClick }: InvoiceHeaderPro
         ← Volver a la lista
       </Link>
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Encabezado</h2>
+        <h1 className="text-2xl font-bold text-gray-900">{invoice.proveedor ?? "—"}</h1>
         <Button variant="outline" size="sm" onClick={onEditClick} className="min-h-[44px]">
           Editar documento
         </Button>

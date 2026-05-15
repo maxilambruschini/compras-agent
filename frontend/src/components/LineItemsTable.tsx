@@ -20,6 +20,13 @@ interface LineItemsTableProps {
 export default function LineItemsTable({ invoiceId, items }: LineItemsTableProps) {
   const [editingItem, setEditingItem] = useState<LineItemResponse | null>(null);
 
+  const fmt = (v: string | null) =>
+    !v || parseFloat(v) === 0
+      ? "—"
+      : parseFloat(v)
+          .toLocaleString("es-AR", { maximumFractionDigits: 4 })
+          .replace(/\.?0+$/, "");
+
   function formatPercent(value: string | null, decimals: number): string {
     if (!value) return "—";
     const num = Number(value);
@@ -58,8 +65,8 @@ export default function LineItemsTable({ invoiceId, items }: LineItemsTableProps
                 <TableCell>{index + 1}</TableCell>
                 <TableCell>{item.descripcion ?? "—"}</TableCell>
                 <TableCell>{item.codigo_sku ?? "—"}</TableCell>
-                <TableCell>{item.bultos ?? "—"}</TableCell>
-                <TableCell>{item.unidades_por_bulto ?? "—"}</TableCell>
+                <TableCell>{fmt(item.bultos)}</TableCell>
+                <TableCell>{fmt(item.unidades_por_bulto)}</TableCell>
                 <TableCell>{formatCurrency(item.precio_unitario_sin_iva)}</TableCell>
                 <TableCell>{formatPercent(item.descuento_pct, 1)}</TableCell>
                 <TableCell>{formatPercent(item.iva_rate, 0)}</TableCell>

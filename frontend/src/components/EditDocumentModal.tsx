@@ -8,6 +8,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import FormField from "./FormField";
 import ErrorBanner from "./ErrorBanner";
 import LoadingSpinner from "./LoadingSpinner";
@@ -28,7 +35,7 @@ export default function EditDocumentModal({
   const queryClient = useQueryClient();
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  const [tipo_comprobante, setTipoComprobante] = useState(invoice.tipo_comprobante ?? "");
+  const [tipo_comprobante, setTipoComprobante] = useState(invoice.tipo_comprobante ?? "__none__");
   const [numero_documento, setNumeroDocumento] = useState(invoice.numero_documento ?? "");
   const [proveedor, setProveedor] = useState(invoice.proveedor ?? "");
   const [fecha, setFecha] = useState(invoice.fecha ?? "");
@@ -53,7 +60,7 @@ export default function EditDocumentModal({
 
   function handleSave() {
     mutation.mutate({
-      tipo_comprobante: tipo_comprobante || null,
+      tipo_comprobante: (tipo_comprobante === "__none__" || !tipo_comprobante) ? null : tipo_comprobante,
       numero_documento: numero_documento || null,
       proveedor: proveedor || null,
       fecha: fecha || null,
@@ -78,11 +85,20 @@ export default function EditDocumentModal({
             />
           </FormField>
           <FormField label="Tipo comprobante" htmlFor="tipo_comprobante">
-            <Input
-              id="tipo_comprobante"
-              value={tipo_comprobante}
-              onChange={(e) => setTipoComprobante(e.target.value)}
-            />
+            <Select value={tipo_comprobante} onValueChange={setTipoComprobante}>
+              <SelectTrigger id="tipo_comprobante" className="min-h-[44px]">
+                <SelectValue placeholder="Seleccionar tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">Sin especificar</SelectItem>
+                <SelectItem value="FACTURA_A">Factura A</SelectItem>
+                <SelectItem value="FACTURA_B">Factura B</SelectItem>
+                <SelectItem value="FACTURA_C">Factura C</SelectItem>
+                <SelectItem value="NOTA_DEBITO_A">Nota Débito A</SelectItem>
+                <SelectItem value="NOTA_CREDITO_A">Nota Crédito A</SelectItem>
+                <SelectItem value="LISTA_INFORMAL">Lista informal</SelectItem>
+              </SelectContent>
+            </Select>
           </FormField>
           <FormField label="Número" htmlFor="numero_documento">
             <Input
