@@ -1,0 +1,19 @@
+{
+  "tipo_comprobante": "FACTURA_A",
+  "numero_documento": "0010-00065191",
+  "proveedor": "ENSINCRO S.R.L",
+  "fecha": "2026-01-29",
+  "cuit_proveedor": "30-70974857-9",
+  "cae": "86051718740674",
+  "fecha_vencimiento_cae": "2026-02-08",
+  "line_items": [
+    {"descripcion": "BULTO MARROC 4E X 54 U", "codigo_sku": "PVBULMARROCX54", "bultos": 20.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 94254.55, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO MARROC 12 E X 6 U", "codigo_sku": "PVBULMARROC12X6", "bultos": 50.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 31418.18, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO CONO CHOCO 12EX6U REG", "codigo_sku": "PVBULCNDESTU6", "bultos": 60.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 63312.40, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO ALF CHOCO BCO 12EX6U RE", "codigo_sku": "PVBULRACHBX6", "bultos": 80.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 73309.09, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO ALF MOUSSE 12EX6U REG", "codigo_sku": "PVBULALFMOUX6", "bultos": 40.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 73309.09, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO ALFAJOR MINI 12 X 6 U", "codigo_sku": "PVBULALFMINIX6", "bultos": 68.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 51003.77, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BOLSA POLI. CHICA NEGRA x50u", "codigo_sku": "PVBOLSAPCHICA", "bultos": 25.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 33057.85, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BOLSA POLI. GRANDE NEGRA x50u", "codigo_sku": "PVBOLSAPGDEN", "bultos": 15.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 33057.85, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null}
+  ]
+}

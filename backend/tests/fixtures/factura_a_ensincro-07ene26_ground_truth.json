@@ -1,0 +1,20 @@
+{
+  "tipo_comprobante": "FACTURA_A",
+  "numero_documento": "0010-00064820",
+  "proveedor": "ENSINCRO S.R.L",
+  "fecha": "2026-01-07",
+  "cuit_proveedor": "30-70974857-9",
+  "cae": "76019885402231",
+  "fecha_vencimiento_cae": "2026-01-17",
+  "line_items": [
+    {"descripcion": "BULTO ALF 72% 6 E X 12 U", "codigo_sku": "PVALF72%6X12", "bultos": 80.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 107156.13, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO ALF CHOCO NEG 12EX6U RE", "codigo_sku": "PVBULALFCHNEX6R", "bultos": 100.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 73309.09, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO ALF MAICENA 12EX6U REG", "codigo_sku": "PVBULAMDESTU06", "bultos": 80.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 73309.09, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO CONO CHOCO 12EX6U REG", "codigo_sku": "PVBULCNDESTU6", "bultos": 60.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 63312.40, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO ALF CHOCO BCO 12EX6U RE", "codigo_sku": "PVBULRACHBX6", "bultos": 80.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 73309.09, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO ALF CHOCO MIX 6EX12U", "codigo_sku": "PVBULALFCHMIX12", "bultos": 80.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 73309.09, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO FRASCO DDL 12 X 450", "codigo_sku": "PVBULDDL450", "bultos": 50.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 40803.17, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO TAB LECHE X 12 U", "codigo_sku": "PVCHOCOLECHEX12", "bultos": 5.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 39669.42, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO TAB BLANCO X 12 U", "codigo_sku": "PVCHOCOBCOX12", "bultos": 5.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 39669.42, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null}
+  ]
+}

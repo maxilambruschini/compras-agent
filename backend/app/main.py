@@ -40,10 +40,38 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
         debug=settings.debug,
     )
+
+    # CORS must be registered before any include_router call
+    from fastapi.middleware.cors import CORSMiddleware
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:5173"],
+        allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=["*"],
+    )
+
     # Import router inside factory — avoids circular import at module init time
     from app.routers.health import router as health_router
 
     app.include_router(health_router)
+
+    # Admin router — always registered, no debug gate (UI-01 through UI-05)
+    from app.routers.admin import router as admin_router
+
+    app.include_router(admin_router, tags=["admin"])
+
+    # Debug-only extraction test endpoint (D-05) — not registered in production
+    if settings.debug:
+        from app.routers.extraction import router as extraction_router
+
+        app.include_router(extraction_router, prefix="/extraction", tags=["extraction"])
+
+    # WhatsApp webhook — always registered; provider selected via WHATSAPP_PROVIDER env var
+    from app.routers.whatsapp import router as whatsapp_router
+
+    app.include_router(whatsapp_router, prefix="/whatsapp", tags=["whatsapp"])
+
     return app
 
 

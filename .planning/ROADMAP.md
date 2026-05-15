@@ -14,8 +14,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Docker Compose scaffold, Postgres schema, Pydantic models, environment wiring (completed 2026-05-13)
 - [ ] **Phase 2: Extraction Pipeline** - GPT-4o vision extraction service, confidence scoring, storage, testable in isolation
-- [ ] **Phase 3: WhatsApp Pipeline** - End-to-end webhook receive → extract → store → reply
-- [ ] **Phase 4: Admin UI** - React admin interface for invoice list, detail, edit, search, and delete
+- [x] **Phase 3: WhatsApp Pipeline** - End-to-end webhook receive → extract → store → reply (completed 2026-05-14)
+- [x] **Phase 4: Admin UI** - React admin interface for invoice list, detail, edit, search, and delete (completed 2026-05-15)
 
 ## Phase Details
 
@@ -46,7 +46,14 @@ Plans:
   3. A confidence score between 0.0 and 1.0 is produced for every extraction, derived from non-null critical fields and cross-field consistency
   4. The original invoice file is saved to the local filesystem via StorageBackend and the stored path is returned
   5. Processing errors (download failure, extraction failure) are captured and logged with the originating message reference
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+**Wave 1**
+- [x] 02-01-PLAN.md — Wave 0 tests + StorageBackend + ExtractionService skeleton + debug-gated /extraction/test router
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 02-02-PLAN.md — SYSTEM_PROMPT constant + hardened error semantics + EXT-01..EXT-07 + VAL-04 + VAL-05 mocked tests + integration marker
+- [x] 02-03-PLAN.md — calibrate_prompt.py (Claude Opus 4.7 ground truth + GPT-4o diff loop) + fixtures README + D-11 human done-gate
 
 ### Phase 3: WhatsApp Pipeline
 **Goal**: An allowlisted employee can send an invoice photo on WhatsApp and receive a reply; the invoice data is stored in the database within seconds
@@ -60,7 +67,13 @@ Plans:
   4. Sending an unreadable image or unsupported file format produces an informative error reply to the sender
   5. Submitting a duplicate invoice (same numero_documento + proveedor) does not create a second database record; the sender is notified
   6. Inbound webhook requests with invalid HMAC-SHA256 signatures are rejected with HTTP 401; valid signatures are processed normally
-**Plans**: TBD
+**Plans:** 2/2 plans complete
+Plans:
+**Wave 1**
+- [x] 03-01-PLAN.md — WhatsAppProvider Protocol + TwilioProvider + webhook (signature, allowlist, ack, asyncio.create_task hook) + Alembic UNIQUE migration
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 03-02-PLAN.md — InvoiceService + process_invoice background pipeline (extract, dedup, save, summary/duplicate/error reply) + live Twilio sandbox verification
 
 ### Phase 4: Admin UI
 **Goal**: A manager or accountant can open a browser, see all captured invoices, search and filter them, inspect details with line items, correct AI errors, and delete records
@@ -74,8 +87,18 @@ Plans:
   4. Any extracted field (document-level or line-item) can be edited and saved directly in the UI
   5. An invoice record can be deleted from the UI; the original file on disk is retained
   6. Pending review invoices are visually distinguished (highlighted row or badge) in the list view
-**Plans**: TBD
-**UI hint**: yes
+**Plans:** 5/5 plans complete
+Plans:
+**Wave 1** *(parallel — no shared files)*
+- [x] 04-01-PLAN.md — Wave 0 test stubs + admin.py skeleton + schemas + 7 API endpoints + CORS + pytest suite (UI-01, UI-02, UI-03, UI-04, UI-05)
+- [x] 04-02-PLAN.md — Tailwind v4 install + shadcn init + 9 components + vite.config.ts + index.css + tsconfig alias (UI-01, UI-06)
+
+**Wave 2** *(serial — 04-04 depends on 04-03 stub; blocked on Wave 1)*
+- [x] 04-03-PLAN.md — TypeScript types + API client + hooks + shared components + InvoiceListPage + App router (UI-01, UI-02, UI-06)
+- [x] 04-04-PLAN.md — InvoiceDetailPage + DataPanel + ImagePanel + ActionBar + edit modals + delete flow (UI-03, UI-04, UI-05)
+
+**Wave 3** *(blocked on Wave 2)*
+- [x] 04-05-PLAN.md — Human verification of all 6 UI flows + full backend suite gate (UI-01 through UI-06)
 
 ## Progress
 
@@ -86,5 +109,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete   | 2026-05-13 |
 | 2. Extraction Pipeline | 0/TBD | Not started | - |
-| 3. WhatsApp Pipeline | 0/TBD | Not started | - |
-| 4. Admin UI | 0/TBD | Not started | - |
+| 3. WhatsApp Pipeline | 2/2 | Complete    | 2026-05-14 |
+| 4. Admin UI | 5/5 | Complete   | 2026-05-15 |

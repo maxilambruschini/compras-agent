@@ -1,19 +1,32 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+import path from 'path'
 
-// REVIEWS.md MEDIUM fix: proxy target reads from env var so this config works
-// both inside Docker (VITE_API_URL=http://backend:8000) and locally (fallback http://localhost:8000)
-const apiTarget = process.env.VITE_API_URL || 'http://localhost:8000'
+// Proxy target uses API_PROXY_TARGET (non-VITE_ prefix = server-side only, never injected
+// into the browser bundle). VITE_API_URL is intentionally left unset so the browser-side
+// BASE_URL resolves to "" and all API calls go through the Vite proxy on the same origin.
+const apiTarget = process.env.API_PROXY_TARGET || 'http://localhost:8000'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   server: {
     host: true,
     port: 5173,
     proxy: {
-      '/api': apiTarget,
-      '/health': apiTarget,
+      // All backend API calls are prefixed with /api in the browser so they
+      // never collide with React Router page routes (e.g. /invoices/:id).
+      // The rewrite strips /api before forwarding to the backend.
+      '/api': {
+        target: apiTarget,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
     },
   },
 })

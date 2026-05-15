@@ -1,0 +1,19 @@
+{
+  "tipo_comprobante": "FACTURA_A",
+  "numero_documento": "0010-00065499",
+  "proveedor": "ENSINCRO S.R.L",
+  "fecha": "2026-02-18",
+  "cuit_proveedor": "30-70974857-9",
+  "cae": "86074310112082",
+  "fecha_vencimiento_cae": "2026-02-28",
+  "line_items": [
+    {"descripcion": "BULTO ALF CHOCO NEG 12EX6U RE", "codigo_sku": "PVBULALFCHNEX6R", "bultos": 100.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 73309.09, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO ALF MAICENA 12EX6U REG", "codigo_sku": "PVBULAMDESTU06", "bultos": 48.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 73309.09, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO CONO CHOCO 12EX6U REG", "codigo_sku": "PVBULCNDESTU6", "bultos": 30.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 63312.40, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO ALF CHOCO BCO 12EX6U RE", "codigo_sku": "PVBULRACHBX6", "bultos": 80.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 73309.09, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO ALF MOUSSE 12EX6U REG", "codigo_sku": "PVBULALFMOUX6", "bultos": 40.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 73309.09, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO ALF CHOCO MIX 6EX12U", "codigo_sku": "PVBULALFCHMIX12", "bultos": 80.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 73309.09, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO ALF 72% 9 E X 8 U", "codigo_sku": "PVALF72%9X8", "bultos": 84.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 109963.64, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO FRASCO DDL 12 X 450", "codigo_sku": "PVBULDDL450", "bultos": 120.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 40803.17, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null}
+  ]
+}

@@ -43,14 +43,18 @@ def get_engine() -> AsyncEngine:
 def get_async_session_local() -> async_sessionmaker[AsyncSession]:
     """Return the singleton async_sessionmaker, creating it on first call (lazy).
 
-    Thread-safe via double-checked locking.
+    get_engine() is called first (it has its own lock) so we never acquire
+    _engine_lock while _engine_lock is already held — avoids a deadlock where
+    get_async_session_local() holds _engine_lock and then calls get_engine()
+    which also tries to acquire _engine_lock (threading.Lock is non-reentrant).
     """
     global _session_local
     if _session_local is None:
+        engine = get_engine()  # ensures engine is created with its own lock
         with _engine_lock:
             if _session_local is None:
                 _session_local = async_sessionmaker(
-                    get_engine(),
+                    engine,
                     expire_on_commit=False,  # Mandatory — prevents MissingGreenlet after commit
                     class_=AsyncSession,
                 )

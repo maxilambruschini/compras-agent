@@ -1,0 +1,20 @@
+{
+  "tipo_comprobante": "FACTURA_A",
+  "numero_documento": "0010-00064721",
+  "proveedor": "ENSINCRO S.R.L",
+  "fecha": "2025-12-30",
+  "cuit_proveedor": "30-70974857-9",
+  "cae": "75529871899414",
+  "fecha_vencimiento_cae": "2026-01-09",
+  "line_items": [
+    {"descripcion": "BULTO MARROC 4E X 54 U", "codigo_sku": "PVBULMARROCX54", "bultos": 5.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 94254.55, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO MARROC 12 E X 6 U", "codigo_sku": "PVBULMARROC12X6", "bultos": 50.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 31418.18, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO GALLETA AVENA CHIP X 21", "codigo_sku": "PVBULGALLAVCH21", "bultos": 10.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 35702.08, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO ALF 72% 9 E X 8 U", "codigo_sku": "PVALF72%9X8", "bultos": 20.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 109963.64, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO TAB LECHE X 12 U", "codigo_sku": "PVCHOCOLECHEX12", "bultos": 1.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 39669.42, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO TAB AMARG C/AVE.PAR X12U", "codigo_sku": "PVCHAMAVEPAX12", "bultos": 1.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 39669.42, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BULTO TAB BLANCO X 12 U", "codigo_sku": "PVCHOCOBCOX12", "bultos": 1.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 39669.42, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BOLSA POLI. GRANDE NEGRA x50u", "codigo_sku": "PVBOLSAPGDEN", "bultos": 10.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 33057.85, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null},
+    {"descripcion": "BOLSA POLI. CHICA NEGRA x50u", "codigo_sku": "PVBOLSAPCHICA", "bultos": 10.0, "unidades_por_bulto": null, "precio_unitario_sin_iva": 33057.85, "descuento_pct": null, "iva_rate": 21.0, "percepciones_iibb": null}
+  ]
+}

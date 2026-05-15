@@ -7,11 +7,26 @@
   Base.metadata.create_all on entry and drop_all on exit.
 - db_session: function-scoped AsyncSession yielded from the test engine.
 """
+import os
+
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.db.models import Base
+
+# Capture real API key before env_setup patches it — used by integration tests.
+_REAL_OPENAI_API_KEY: str = os.environ.get("OPENAI_API_KEY", "")
+
+
+@pytest.fixture(scope="session")
+def real_openai_api_key() -> str:
+    """Return the OPENAI_API_KEY that was set BEFORE env_setup patched the environment.
+
+    Integration tests must use this fixture rather than os.environ['OPENAI_API_KEY']
+    to avoid receiving the test-stub value injected by env_setup.
+    """
+    return _REAL_OPENAI_API_KEY
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
@@ -30,6 +45,13 @@ def env_setup():
     mp.setenv("WHATSAPP_TOKEN", "test-whatsapp-token")
     mp.setenv("WHATSAPP_PHONE_NUMBER_ID", "test-phone-number-id")
     mp.setenv("WHATSAPP_VERIFY_TOKEN", "test-verify-token")
+    # Phase 3: WhatsApp provider credentials
+    mp.setenv("WHATSAPP_PROVIDER", "twilio")
+    mp.setenv("TWILIO_ACCOUNT_SID", "test-twilio-sid")
+    mp.setenv("TWILIO_AUTH_TOKEN", "test-twilio-token")
+    mp.setenv("TWILIO_FROM_NUMBER", "whatsapp:+14155238886")
+    # NOTE: WEBHOOK_BASE_URL is NOT set at session scope; individual tests that need it
+    # must patch it via monkeypatch and call get_settings.cache_clear() before/after.
 
     # Clear the lru_cache so any previously cached Settings (from other imports) is evicted
     from app.config import get_settings

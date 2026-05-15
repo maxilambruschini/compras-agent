@@ -2,9 +2,12 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+# Install uv
+RUN pip install uv
+
 # Install dependencies first for Docker layer caching
-COPY requirements.txt .
-RUN pip install uv && uv pip install --system --no-cache -r requirements.txt
+COPY pyproject.toml .
+RUN uv pip install --system --no-cache .
 
 COPY . .
 
