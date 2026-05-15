@@ -9,16 +9,8 @@ import {
 } from "@/components/ui/table";
 import StatusBadge from "./StatusBadge";
 import { formatDate } from "../lib/format";
+import { TIPO_LABELS } from "../lib/tipoLabels";
 import type { InvoiceListItem } from "../types/invoice";
-
-const TIPO_LABELS: Record<string, string> = {
-  FACTURA_A: "Factura A",
-  FACTURA_B: "Factura B",
-  FACTURA_C: "Factura C",
-  NOTA_DEBITO_A: "N. Débito A",
-  NOTA_CREDITO_A: "N. Crédito A",
-  LISTA_INFORMAL: "Lista informal",
-};
 
 interface InvoiceTableProps {
   invoices: InvoiceListItem[];

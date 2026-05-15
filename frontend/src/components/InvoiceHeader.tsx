@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import StatusBadge from "./StatusBadge";
 import { formatDate, formatCuit } from "../lib/format";
+import { TIPO_LABELS } from "../lib/tipoLabels";
 import type { InvoiceDetailResponse } from "../types/invoice";
 
 interface InvoiceHeaderProps {
@@ -26,7 +27,7 @@ export default function InvoiceHeader({ invoice, onEditClick }: InvoiceHeaderPro
         <dd className="text-gray-900">{invoice.proveedor ?? "—"}</dd>
 
         <dt className="text-gray-500 text-xs font-semibold uppercase">Tipo comprobante</dt>
-        <dd className="text-gray-900">{invoice.tipo_comprobante ?? "—"}</dd>
+        <dd className="text-gray-900">{invoice.tipo_comprobante ? (TIPO_LABELS[invoice.tipo_comprobante] ?? invoice.tipo_comprobante) : "—"}</dd>
 
         <dt className="text-gray-500 text-xs font-semibold uppercase">Número</dt>
         <dd className="text-gray-900">{invoice.numero_documento ?? "—"}</dd>
