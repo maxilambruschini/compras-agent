@@ -1,0 +1,109 @@
+import type {
+  InvoiceListParams,
+  InvoiceListResponse,
+  InvoiceDetailResponse,
+  InvoiceDocumentPatch,
+  LineItemPatch,
+  LineItemResponse,
+} from "../types/invoice";
+
+const BASE_URL = import.meta.env.VITE_API_URL ?? "";
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...(init?.headers ?? {}),
+    },
+  });
+
+  if (!res.ok) {
+    let detail: string;
+    try {
+      const json = await res.json();
+      detail = json.detail ?? `HTTP ${res.status}`;
+    } catch {
+      detail = `HTTP ${res.status}`;
+    }
+    throw new Error(detail);
+  }
+
+  return res.json() as Promise<T>;
+}
+
+export function fetchInvoices(params: InvoiceListParams): Promise<InvoiceListResponse> {
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== "") {
+      searchParams.set(key, String(value));
+    }
+  }
+  const qs = searchParams.toString();
+  return request<InvoiceListResponse>(`/invoices${qs ? `?${qs}` : ""}`);
+}
+
+export function fetchInvoice(id: string): Promise<InvoiceDetailResponse> {
+  return request<InvoiceDetailResponse>(`/invoices/${id}`);
+}
+
+export function patchInvoice(
+  id: string,
+  data: Partial<InvoiceDocumentPatch>
+): Promise<InvoiceDetailResponse> {
+  return request<InvoiceDetailResponse>(`/invoices/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export function patchInvoiceStatus(
+  id: string,
+  status: "confirmed" | "rejected"
+): Promise<InvoiceDetailResponse> {
+  return request<InvoiceDetailResponse>(`/invoices/${id}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+}
+
+export function patchLineItem(
+  id: string,
+  itemId: number,
+  data: Partial<LineItemPatch>
+): Promise<LineItemResponse> {
+  return request<LineItemResponse>(`/invoices/${id}/items/${itemId}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteInvoice(id: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}/invoices/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!res.ok) {
+    let detail: string;
+    try {
+      const json = await res.json();
+      detail = json.detail ?? `HTTP ${res.status}`;
+    } catch {
+      detail = `HTTP ${res.status}`;
+    }
+    throw new Error(detail);
+  }
+  // 204 No Content — no body to parse
+}
+
+/**
+ * @note A4: Assumes globally unique flat filenames in storage_path. If StorageBackend uses
+ * subdirectories or non-unique basenames, replace with /invoices/{id}/image endpoint.
+ * See REVIEWS.md HIGH concern #2.
+ */
+export function imageUrl(imagePath: string): string {
+  const filename = imagePath.split("/").pop() ?? imagePath;
+  return `${BASE_URL}/images/${filename}`;
+}
