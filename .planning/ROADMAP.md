@@ -94,7 +94,7 @@ Plans:
 - [x] 04-02-PLAN.md — Tailwind v4 install + shadcn init + 9 components + vite.config.ts + index.css + tsconfig alias (UI-01, UI-06)
 
 **Wave 2** *(serial — 04-04 depends on 04-03 stub; blocked on Wave 1)*
-- [ ] 04-03-PLAN.md — TypeScript types + API client + hooks + shared components + InvoiceListPage + App router (UI-01, UI-02, UI-06)
+- [x] 04-03-PLAN.md — TypeScript types + API client + hooks + shared components + InvoiceListPage + App router (UI-01, UI-02, UI-06)
 - [ ] 04-04-PLAN.md — InvoiceDetailPage + DataPanel + ImagePanel + ActionBar + edit modals + delete flow (UI-03, UI-04, UI-05)
 
 **Wave 3** *(blocked on Wave 2)*
