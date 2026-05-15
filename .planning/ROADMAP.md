@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation** - Docker Compose scaffold, Postgres schema, Pydantic models, environment wiring (completed 2026-05-13)
 - [ ] **Phase 2: Extraction Pipeline** - GPT-4o vision extraction service, confidence scoring, storage, testable in isolation
 - [x] **Phase 3: WhatsApp Pipeline** - End-to-end webhook receive → extract → store → reply (completed 2026-05-14)
-- [ ] **Phase 4: Admin UI** - React admin interface for invoice list, detail, edit, search, and delete
+- [x] **Phase 4: Admin UI** - React admin interface for invoice list, detail, edit, search, and delete (completed 2026-05-15)
 
 ## Phase Details
 
@@ -87,7 +87,7 @@ Plans:
   4. Any extracted field (document-level or line-item) can be edited and saved directly in the UI
   5. An invoice record can be deleted from the UI; the original file on disk is retained
   6. Pending review invoices are visually distinguished (highlighted row or badge) in the list view
-**Plans:** 5 plans
+**Plans:** 5/5 plans complete
 Plans:
 **Wave 1** *(parallel — no shared files)*
 - [x] 04-01-PLAN.md — Wave 0 test stubs + admin.py skeleton + schemas + 7 API endpoints + CORS + pytest suite (UI-01, UI-02, UI-03, UI-04, UI-05)
@@ -95,10 +95,10 @@ Plans:
 
 **Wave 2** *(serial — 04-04 depends on 04-03 stub; blocked on Wave 1)*
 - [x] 04-03-PLAN.md — TypeScript types + API client + hooks + shared components + InvoiceListPage + App router (UI-01, UI-02, UI-06)
-- [ ] 04-04-PLAN.md — InvoiceDetailPage + DataPanel + ImagePanel + ActionBar + edit modals + delete flow (UI-03, UI-04, UI-05)
+- [x] 04-04-PLAN.md — InvoiceDetailPage + DataPanel + ImagePanel + ActionBar + edit modals + delete flow (UI-03, UI-04, UI-05)
 
 **Wave 3** *(blocked on Wave 2)*
-- [ ] 04-05-PLAN.md — Human verification of all 6 UI flows + full backend suite gate (UI-01 through UI-06)
+- [x] 04-05-PLAN.md — Human verification of all 6 UI flows + full backend suite gate (UI-01 through UI-06)
 
 ## Progress
 
@@ -110,4 +110,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Foundation | 2/2 | Complete   | 2026-05-13 |
 | 2. Extraction Pipeline | 0/TBD | Not started | - |
 | 3. WhatsApp Pipeline | 2/2 | Complete    | 2026-05-14 |
-| 4. Admin UI | 0/5 | Not started | - |
+| 4. Admin UI | 5/5 | Complete   | 2026-05-15 |
