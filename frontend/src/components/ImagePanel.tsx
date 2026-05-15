@@ -1,12 +1,13 @@
 import { imageUrl } from "../lib/api";
 
 interface ImagePanelProps {
+  invoiceId: string;
   imagePath: string | null;
   proveedor: string | null;
   numeroDocumento: string | null;
 }
 
-export default function ImagePanel({ imagePath, proveedor, numeroDocumento }: ImagePanelProps) {
+export default function ImagePanel({ invoiceId, imagePath, proveedor, numeroDocumento }: ImagePanelProps) {
   if (!imagePath) {
     return (
       <div className="md:sticky md:top-6">
@@ -23,13 +24,13 @@ export default function ImagePanel({ imagePath, proveedor, numeroDocumento }: Im
     <div className="md:sticky md:top-6">
       {extension === "pdf" ? (
         <embed
-          src={imageUrl(imagePath)}
+          src={imageUrl(invoiceId)}
           type="application/pdf"
           className="w-full max-h-[80vh]"
         />
       ) : (
         <img
-          src={imageUrl(imagePath)}
+          src={imageUrl(invoiceId)}
           alt={`Factura original de ${proveedor ?? "proveedor"} — ${numeroDocumento ?? "sin número"}`}
           className="w-full max-h-[80vh] object-contain rounded border border-gray-200"
         />

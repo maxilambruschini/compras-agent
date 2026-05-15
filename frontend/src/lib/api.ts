@@ -101,12 +101,6 @@ export async function deleteInvoice(id: string): Promise<void> {
   // 204 No Content — no body to parse
 }
 
-/**
- * @note A4: Assumes globally unique flat filenames in storage_path. If StorageBackend uses
- * subdirectories or non-unique basenames, replace with /invoices/{id}/image endpoint.
- * See REVIEWS.md HIGH concern #2.
- */
-export function imageUrl(imagePath: string): string {
-  const filename = imagePath.split("/").pop() ?? imagePath;
-  return `${BASE_URL}/images/${filename}`;
+export function imageUrl(invoiceId: string): string {
+  return `${BASE_URL}/invoices/${invoiceId}/image`;
 }

@@ -60,6 +60,7 @@ export default function InvoiceDetailPage() {
         {/* Right column: image */}
         <div className="md:sticky md:top-6">
           <ImagePanel
+            invoiceId={data.id}
             imagePath={data.image_path}
             proveedor={data.proveedor}
             numeroDocumento={data.numero_documento}

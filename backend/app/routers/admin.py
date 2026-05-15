@@ -225,6 +225,26 @@ async def delete_invoice(
     return Response(status_code=204)
 
 
+@router.get("/invoices/{invoice_id}/image")
+async def serve_invoice_image(
+    invoice_id: uuid.UUID = Path(...),
+    db: AsyncSession = Depends(get_db),
+    settings: Settings = Depends(get_settings),
+) -> FileResponse:
+    """Serve invoice image by invoice ID. Resolves image_path from DB — no path traversal risk."""
+    result = await db.execute(select(Invoice).where(Invoice.id == invoice_id))
+    invoice = result.scalar_one_or_none()
+    if invoice is None or not invoice.image_path:
+        raise HTTPException(status_code=404, detail="Image not found")
+    storage_root = pathlib.Path(settings.storage_path).resolve()
+    file_path = (storage_root / invoice.image_path).resolve()
+    if not str(file_path).startswith(str(storage_root) + "/"):
+        raise HTTPException(status_code=400, detail="Invalid image path")
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Image file not found")
+    return FileResponse(str(file_path))
+
+
 @router.get("/images/{filename}")
 async def serve_image(
     filename: str = Path(..., pattern=r"^[^/\\]+$"),
