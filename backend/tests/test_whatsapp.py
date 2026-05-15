@@ -536,8 +536,8 @@ async def test_invalid_magic_bytes(process_invoice_client):
 
     from app.routers import whatsapp as wa_module
 
-    # Provider returns PDF bytes (not JPEG/PNG)
-    pdf_bytes = b"%PDF-1.4 fake pdf content"
+    # Provider returns bytes with no recognized magic signature (not JPEG, PNG, or PDF)
+    pdf_bytes = b"\x00\x00\x00\x00 definitely not an image or pdf"
     mock_provider.download_media = AsyncMock(return_value=pdf_bytes)
 
     mock_extraction_svc = _make_mock_extraction_service(_make_extraction_result())

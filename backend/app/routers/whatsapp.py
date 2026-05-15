@@ -97,7 +97,9 @@ EM_DASH: str = "—"
 # Supported image MIME types (Plan 02 uses this set for content-type gating)
 # ---------------------------------------------------------------------------
 
-SUPPORTED_IMAGE_TYPES: frozenset[str] = frozenset({"image/jpeg", "image/jpg", "image/png"})
+SUPPORTED_IMAGE_TYPES: frozenset[str] = frozenset({
+    "image/jpeg", "image/jpg", "image/png", "application/pdf",
+})
 
 # ---------------------------------------------------------------------------
 # Plan 02: Magic-byte signature constants
@@ -107,8 +109,9 @@ SUPPORTED_IMAGE_TYPES: frozenset[str] = frozenset({"image/jpeg", "image/jpg", "i
 # byte signature of downloaded media.
 # ---------------------------------------------------------------------------
 
-JPEG_MAGIC: bytes = b"\xff\xd8"  # JPEG SOI (Start of Image) marker
+JPEG_MAGIC: bytes = b"\xff\xd8"           # JPEG SOI (Start of Image) marker
 PNG_MAGIC: bytes = b"\x89\x50\x4e\x47"  # \x89PNG — PNG file signature first 4 bytes
+PDF_MAGIC: bytes = b"%PDF"               # PDF header signature
 
 
 # ---------------------------------------------------------------------------
@@ -206,6 +209,8 @@ def _validate_image_bytes(data: bytes) -> bool:
     if data[:2] == JPEG_MAGIC:
         return True
     if len(data) >= 4 and data[:4] == PNG_MAGIC:
+        return True
+    if len(data) >= 4 and data[:4] == PDF_MAGIC:
         return True
     return False
 
@@ -405,14 +410,14 @@ async def process_invoice(
         return
 
     # Step 6: Derive filename from MessageSid + content type extension
-    ext_map = {"image/jpeg": ".jpg", "image/jpg": ".jpg", "image/png": ".png"}
+    ext_map = {"image/jpeg": ".jpg", "image/jpg": ".jpg", "image/png": ".png", "application/pdf": ".pdf"}
     mime_key = media_content_type.lower().split(";")[0].strip()
     ext = ext_map.get(mime_key, ".jpg")
     filename = f"{message_sid}{ext}"
 
     # Extract invoice — ExtractionService also saves original file via LocalStorageBackend
     try:
-        result = await extraction_service.extract(image_bytes, filename)
+        result = await extraction_service.extract(image_bytes, filename, mime_type=mime_key)
     except (ExtractionRefusalError, ExtractionFailedError) as exc:
         await _safe_send(provider, sender, UNREADABLE_REPLY, task_log)
         task_log.error("whatsapp.extraction_failed", error=str(exc))

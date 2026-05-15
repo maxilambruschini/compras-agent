@@ -24,8 +24,13 @@ from twilio.rest import Client
 
 log = structlog.get_logger()
 
-# SSRF guard: only Twilio-hosted media URLs are permitted (T-3-03)
-TWILIO_MEDIA_URL_PREFIX = "https://api.twilio.com/"
+# SSRF guard: only Twilio-hosted media URLs are permitted (T-3-03).
+# mms.twiliocdn.com is the CDN Twilio redirects to after the initial api.twilio.com
+# presigned URL — both prefixes are Twilio-controlled infrastructure.
+TWILIO_MEDIA_URL_PREFIXES = (
+    "https://api.twilio.com/",
+    "https://mms.twiliocdn.com/",
+)
 
 
 class TwilioProvider:
@@ -121,12 +126,15 @@ class TwilioProvider:
             ValueError: If media_url does not start with TWILIO_MEDIA_URL_PREFIX.
             httpx.HTTPStatusError: If the download request fails.
         """
-        if not media_url.startswith(TWILIO_MEDIA_URL_PREFIX):
+        if not any(media_url.startswith(p) for p in TWILIO_MEDIA_URL_PREFIXES):
             raise ValueError(
                 f"Refusing to fetch non-Twilio media URL: {media_url!r}. "
-                f"URL must start with {TWILIO_MEDIA_URL_PREFIX!r} (SSRF guard T-3-03)."
+                f"URL must start with one of {TWILIO_MEDIA_URL_PREFIXES} (SSRF guard T-3-03)."
             )
-        async with httpx.AsyncClient() as client:
+        # follow_redirects=True: Twilio's api.twilio.com endpoint issues a 307 to
+        # mms.twiliocdn.com (a presigned CDN URL). The redirect destination is
+        # validated by the SSRF check above before any request is made.
+        async with httpx.AsyncClient(follow_redirects=True) as client:
             response = await client.get(
                 media_url,
                 auth=(self._account_sid, self._auth_token),

@@ -156,22 +156,34 @@ class ExtractionService:
         self._settings = settings
         self._log = structlog.get_logger()  # lazy proxy; bind at call time (Pattern 6)
 
+    @staticmethod
+    def _to_jpeg_bytes(raw: bytes, mime_type: str) -> bytes:
+        """Convert raw media bytes to JPEG if necessary.
+
+        PDFs are rendered to JPEG via PyMuPDF (first page only — invoices are
+        single-page documents in practice). JPEG/PNG bytes pass through unchanged.
+        """
+        if mime_type == "application/pdf":
+            import fitz  # PyMuPDF — imported lazily to avoid startup cost
+            doc = fitz.open(stream=raw, filetype="pdf")
+            page = doc[0]
+            pix = page.get_pixmap(dpi=200)
+            return pix.tobytes("jpeg")
+        return raw
+
     async def _call_gpt4o(
-        self, image_bytes: bytes
+        self, image_bytes: bytes, mime_type: str = "image/jpeg"
     ) -> Tuple[Optional[ExtractedInvoice], Optional[str]]:
         """Call GPT-4o with the invoice image. Returns (parsed_invoice, refusal_reason).
 
         Exactly one of (parsed, refusal) will be non-None on a well-formed response.
         Check refusal BEFORE accessing parsed (Pitfall 2).
 
-        Uses module-level SYSTEM_PROMPT — Plan 03's calibration loop edits that
-        constant without touching this method.
+        PDFs are converted to JPEG before sending — the OpenAI vision API only
+        accepts image/* MIME types via the image_url content block.
         """
-        b64 = base64.b64encode(image_bytes).decode("utf-8")
-        # NOTE: MIME type hardcoded as image/jpeg. OpenAI vision accepts PNG/JPEG bytes
-        # labeled as image/jpeg in practice (verified against fixtures in Plan 03). A
-        # follow-up may wire detect_media_type() from scripts/calibrate_prompt.py — see
-        # RESEARCH.md open question #1. (Addresses review MEDIUM #5.)
+        jpeg_bytes = self._to_jpeg_bytes(image_bytes, mime_type)
+        b64 = base64.b64encode(jpeg_bytes).decode("utf-8")
         try:
             completion = await self._client.chat.completions.parse(
                 model="gpt-4o-2024-08-06",
@@ -202,7 +214,7 @@ class ExtractionService:
         msg = completion.choices[0].message
         return (msg.parsed, msg.refusal)
 
-    async def extract(self, image_bytes: bytes, filename: str) -> ExtractionResult:
+    async def extract(self, image_bytes: bytes, filename: str, mime_type: str = "image/jpeg") -> ExtractionResult:
         """Extract invoice data from image bytes.
 
         Steps (per 02-01-PLAN.md interfaces):
@@ -234,7 +246,7 @@ class ExtractionService:
                 raise ExtractionFailedError(f"storage rejected filename: {exc}") from exc
 
             # Step 4: call GPT-4o
-            parsed, refusal = await self._call_gpt4o(image_bytes)
+            parsed, refusal = await self._call_gpt4o(image_bytes, mime_type)
 
             if refusal is not None:
                 log.error("extraction.failed", error="refusal", refusal=refusal)
