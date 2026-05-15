@@ -15,7 +15,7 @@ interface FilterToolbarProps {
 }
 
 export default function FilterToolbar({ onFilter }: FilterToolbarProps) {
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("all");
   const [proveedor, setProveedor] = useState("");
   const [fechaFrom, setFechaFrom] = useState("");
   const [fechaTo, setFechaTo] = useState("");
@@ -23,7 +23,7 @@ export default function FilterToolbar({ onFilter }: FilterToolbarProps) {
 
   function handleFilter() {
     onFilter({
-      status: status || undefined,
+      status: status === "all" ? undefined : status || undefined,
       proveedor: proveedor || undefined,
       fecha_from: fechaFrom || undefined,
       fecha_to: fechaTo || undefined,
@@ -32,7 +32,7 @@ export default function FilterToolbar({ onFilter }: FilterToolbarProps) {
   }
 
   function handleClear() {
-    setStatus("");
+    setStatus("all");
     setProveedor("");
     setFechaFrom("");
     setFechaTo("");
@@ -47,7 +47,7 @@ export default function FilterToolbar({ onFilter }: FilterToolbarProps) {
           <SelectValue placeholder="Todos los estados" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">Todos los estados</SelectItem>
+          <SelectItem value="all">Todos los estados</SelectItem>
           <SelectItem value="auto_saved">Guardado</SelectItem>
           <SelectItem value="pending_review">Revisar</SelectItem>
           <SelectItem value="confirmed">Confirmado</SelectItem>
