@@ -8,27 +8,49 @@ A WhatsApp-to-database invoice capture system for Argentine companies. Purchasin
 
 An employee sends a photo of an invoice over WhatsApp and the data lands correctly in the database — no manual entry, no lost receipts.
 
+## Current Milestone: v2.0 Gastos Bot
+
+**Goal:** A conversational WhatsApp bot that lets restaurant managers capture cash expenses (gastos) and report twice-daily cash closings (cierres de caja) — so payments stop getting forgotten.
+
+**Target features:**
+- Proactive twice-daily prompts (12:00 / 17:00) asking for pending payments and cash-on-hand
+- Multi-turn conversational gasto capture (intent → follow-up questions → ticket photo → saved record)
+- Caja closing flow recording efectivo en caja for the cierres
+- Admin UI views for gastos and cierres
+
+**Design:** `docs/plans/2026-05-27-gastos-bot-design.md` (reuse-vs-recreate map, hybrid conversation engine, data model, phase sequence).
+
 ## Requirements
 
 ### Validated
 
-- [x] Only allowlisted phone numbers can submit invoices — `sender_allowlist` table defined, CRUD tested (INF-01, Phase 1)
-- [x] App refuses to start when required env vars are missing — Pydantic Settings fail-fast with ValidationError (INF-03, Phase 1)
+- ✓ Only allowlisted phone numbers can submit invoices — `sender_allowlist` table, CRUD tested (INF-01) — v1.0
+- ✓ App refuses to start when required env vars are missing — Pydantic Settings fail-fast (INF-03) — v1.0
+- ✓ Employee sends invoice photo via WhatsApp and receives confirmation — v1.0
+- ✓ AI extracts Argentine invoice fields (CUIT, CAE, tipo de comprobante, IVA, items) from image — v1.0
+- ✓ Extracted data is validated before being written to the database — v1.0
+- ✓ Low-confidence extractions are flagged for human review — v1.0
+- ✓ Original invoice images are stored alongside extracted data — v1.0
+- ✓ Admin UI: list, search, filter, and view all invoices — v1.0
+- ✓ Admin UI: edit extracted fields on any invoice — v1.0
+- ✓ Admin UI: delete invoices — v1.0
+- ✓ Admin UI: view per-invoice line items — v1.0
+- ✓ Duplicate invoice detection prevents double entries — v1.0
 
-### Active
+### Active (v2.0)
 
-- [ ] Employee sends invoice photo via WhatsApp and receives confirmation
-- [ ] Only allowlisted phone numbers can submit invoices
-- [ ] AI extracts Argentine invoice fields (CUIT, CAE, tipo de comprobante, IVA, items) from image
-- [ ] Extracted data is validated before being written to the database
-- [ ] Low-confidence extractions are flagged for human review
-- [ ] Original invoice images are stored alongside extracted data
-- [ ] Admin UI: list, search, filter, and view all invoices
-- [ ] Admin UI: edit extracted fields on any invoice
-- [ ] Admin UI: delete invoices
-- [ ] Admin UI: view per-invoice line items
-- [ ] Admins log in with email/password (Supabase Auth)
-- [ ] Duplicate invoice detection prevents double entries
+- [ ] Manager records a cash expense conversationally over WhatsApp
+- [ ] Bot collects required gasto fields through follow-up questions
+- [ ] Bot requests and stores a photo of the payment ticket
+- [ ] Bot proactively prompts each manager twice a day
+- [ ] Manager reports cash-on-hand for the twice-daily caja closing
+- [ ] Conversation state survives restarts and hours-long reply gaps
+- [ ] Admin UI: list and view captured gastos
+- [ ] Admin UI: list and view caja closings
+
+### Deferred / Not built
+
+- [ ] Admins log in with email/password (Supabase Auth) — deferred from v1.0 (demo had no auth)
 
 ### Out of Scope
 
@@ -91,4 +113,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-13 — Phase 1 (Foundation) complete*
+*Last updated: 2026-05-27 — v1.0 MVP shipped; v2.0 Gastos Bot started*

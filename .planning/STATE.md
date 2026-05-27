@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
+milestone: v2.0
+milestone_name: Gastos Bot
 status: planning
-stopped_at: Phase 4 context gathered
-last_updated: "2026-05-14T20:01:51.077Z"
-last_activity: 2026-05-14
+last_updated: "2026-05-27T18:08:51.131Z"
+last_activity: 2026-05-27
 progress:
-  total_phases: 4
-  completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,12 +24,10 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 
 ## Current Position
 
-Phase: 4
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-05-14
-
-Progress: [██████████] 100%
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-05-27 — Milestone v2.0 started
 
 ## Performance Metrics
 
@@ -98,3 +95,7 @@ None yet.
 Last session: 2026-05-14T20:01:51.071Z
 Stopped at: Phase 4 context gathered
 Resume file: .planning/phases/04-admin-ui/04-CONTEXT.md
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone
