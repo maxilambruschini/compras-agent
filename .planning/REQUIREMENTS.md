@@ -2,7 +2,7 @@
 
 **Milestone:** v2.0 Gastos Bot
 **Defined:** 2026-05-27
-**Provider:** Twilio (WhatsApp). Utility message template submitted via Twilio Content API.
+**Provider:** Twilio (WhatsApp). Demo build — no Utility template required (trigger fires within 24h customer-service window).
 
 Conversational WhatsApp bot for a restaurant manager to record cash expenses
 (gastos) paid out of the register and report twice-daily cash closings (cierres de
@@ -38,12 +38,15 @@ See `docs/plans/2026-05-27-gastos-bot-design.md` and `.planning/research/SUMMARY
 - [ ] **CAJA-01**: Manager reports cash-on-hand (efectivo en caja) for a twice-daily closing
 - [ ] **CAJA-02**: Each closing is recorded with the date and which closing (12:00 / 17:00) it corresponds to
 
-### Proactive Scheduler (SCHED)
+### Prompt Trigger (TRIG)
 
-- [ ] **SCHED-01**: Each active manager is prompted twice daily (12:00 and 17:00 America/Argentina/Buenos_Aires)
-- [ ] **SCHED-02**: Proactive prompts are delivered via a pre-approved Twilio Utility message template (24h-window compliant)
-- [ ] **SCHED-03**: The scheduled prompt asks for pending payments, cash-on-hand, and "¿hiciste otra compra hoy?", branching into the capture/closing flow
-- [ ] **SCHED-04**: Scheduler survives restarts without double-firing or silently skipping (misfire grace + coalesce)
+> Demo build: a real time-based scheduler is out of scope. A manual trigger endpoint
+> stands in for the twice-daily prompt so the prompt flow can be fired on demand
+> during a demo. Within a live demo the recipient has just messaged the bot, so the
+> 24h customer-service window is open and a free-form send works without a template.
+
+- [ ] **TRIG-01**: A protected endpoint, when called, sends the prompt message to a given manager via WhatsApp (demo stand-in for the scheduler)
+- [ ] **TRIG-02**: The triggered prompt asks for pending payments, cash-on-hand, and "¿hiciste otra compra hoy?", and branches into the capture / caja-closing flow
 
 ### Admin UI (UI)
 
@@ -55,6 +58,8 @@ See `docs/plans/2026-05-27-gastos-bot-design.md` and `.planning/research/SUMMARY
 - [ ] Cross-check declared monto against extracted ticket total, warn on mismatch (adds a GPT call per ticket; validate adoption first — no schema change needed, JSON column reserved)
 - [ ] Edit/delete gastos from the admin UI
 - [ ] Daily/weekly expense summaries
+- [ ] Real time-based scheduler (twice-daily 12:00/17:00 prompts) via APScheduler — production path; demo uses the manual trigger endpoint instead
+- [ ] Pre-approved Twilio Utility message template for proactive sends outside the 24h window — required only for the real production scheduler above
 - [ ] Weekend/holiday suppression of proactive prompts
 - [ ] Admin authentication (email/password) — deferred from v1.0
 
@@ -64,10 +69,27 @@ See `docs/plans/2026-05-27-gastos-bot-design.md` and `.planning/research/SUMMARY
 - Free-form LLM tool-calling that can persist records on its own — write path stays deterministic (GPT extracts, code saves)
 - Automatic save without explicit confirmation — one misparse would write garbage permanently
 - Multi-restaurant / multi-tenant — single-restaurant deployment
-- Multi-worker scheduler (Gunicorn `--workers >1`) — v2.0 runs single-worker; revisit with APScheduler 4.x + shared jobstore or external cron if scaled
+- Time-based proactive scheduler — this is a demo build; replaced by a manual trigger endpoint (see TRIG). The real scheduler + Utility template are deferred to the production path.
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (filled by roadmap) | | |
+| CONV-01 | Phase 1 | Pending |
+| CONV-02 | Phase 1 | Pending |
+| CONV-03 | Phase 1 | Pending |
+| CONV-04 | Phase 1 | Pending |
+| CONV-05 | Phase 1 | Pending |
+| CONV-06 | Phase 1 | Pending |
+| GASTO-01 | Phase 1 | Pending |
+| GASTO-02 | Phase 1 | Pending |
+| GASTO-04 | Phase 1 | Pending |
+| GASTO-05 | Phase 1 | Pending |
+| GASTO-06 | Phase 1 | Pending |
+| GASTO-03 | Phase 2 | Pending |
+| CAJA-01 | Phase 2 | Pending |
+| CAJA-02 | Phase 2 | Pending |
+| TRIG-01 | Phase 3 | Pending |
+| TRIG-02 | Phase 3 | Pending |
+| UI-01 | Phase 4 | Pending |
+| UI-02 | Phase 4 | Pending |

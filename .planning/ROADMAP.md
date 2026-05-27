@@ -2,91 +2,74 @@
 
 ## Overview
 
-Four phases take the project from zero to a fully working WhatsApp invoice capture system. Phase 1 locks the data contract (schema + Pydantic models + Docker scaffold) that everything else depends on. Phase 2 builds the AI extraction pipeline in isolation so it can be tested without WhatsApp. Phase 3 wires the end-to-end pipeline: WhatsApp receives a photo and the invoice lands in the database with a reply sent back. Phase 4 delivers the React admin UI so managers can review, edit, and manage all captured invoices.
+**v1.0 MVP** shipped 2026-05-27: WhatsApp invoice capture, GPT-4o extraction, Postgres persistence, React admin UI. Archived to `.planning/milestones/v1.0/`.
 
-## Phases
+**v2.0 Gastos Bot** (current): A conversational WhatsApp bot for Argentine restaurant managers to capture cash expenses (gastos) and report twice-daily cash closings (cierres de caja). Demo build — the proactive scheduler is replaced by a manual trigger endpoint. Four phases, starting at Phase 1.
 
-**Phase Numbering:**
-- Integer phases (1, 2, 3): Planned milestone work
-- Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
+## Milestones
 
-Decimal phases appear between their surrounding integers in numeric order.
+### v1.0 MVP (Shipped: 2026-05-27)
 
-- [x] **Phase 1: Foundation** - Docker Compose scaffold, Postgres schema, Pydantic models, environment wiring (completed 2026-05-13)
-- [ ] **Phase 2: Extraction Pipeline** - GPT-4o vision extraction service, confidence scoring, storage, testable in isolation
-- [x] **Phase 3: WhatsApp Pipeline** - End-to-end webhook receive → extract → store → reply (completed 2026-05-14)
-- [ ] **Phase 4: Admin UI** - React admin interface for invoice list, detail, edit, search, and delete
+- [x] Phase 1: Foundation — Docker Compose + Postgres schema + Pydantic models (completed 2026-05-13)
+- [x] Phase 2: Extraction Pipeline — GPT-4o vision extraction, confidence scoring, StorageBackend (completed 2026-05-14)
+- [x] Phase 3: WhatsApp Pipeline — End-to-end webhook receive → extract → store → reply (completed 2026-05-14)
+- [x] Phase 4: Admin UI — React invoice list, detail, edit, delete, search, filter (completed 2026-05-27)
+
+### v2.0 Gastos Bot (Current)
+
+**Phase Numbering:** Reset to 1 for this milestone.
+
+- [ ] **Phase 1: Data + Conversation Core** - DB models, Alembic migration, ConversationOrchestrator, SlotExtractionService, GastoService — unit-testable with no WhatsApp or scheduler
+- [ ] **Phase 2: WhatsApp Gastos Flow** - /gastos webhook router, reactive multi-turn capture end-to-end via Twilio
+- [ ] **Phase 3: Prompt Trigger Endpoint** - Protected POST /gastos/prompt endpoint that sends the prompt message to a given manager on demand (demo stand-in for the scheduler)
+- [ ] **Phase 4: Admin UI** - Gastos list/detail and Cierres list views cloned from v1.0 invoice pattern
 
 ## Phase Details
 
-### Phase 1: Foundation
-**Goal**: The complete data contract exists — Docker services are running, Postgres schema is migrated, Pydantic extraction models are defined, and the project can be started with `docker compose up`
-**Mode:** mvp
-**Depends on**: Nothing (first phase)
-**Requirements**: INF-01, INF-03
+### Phase 1: Data + Conversation Core
+**Goal**: The conversation engine, data models, and gasto persistence layer exist and are fully unit-tested — no WhatsApp connection required
+**Depends on**: Nothing (first phase of v2.0)
+**Requirements**: CONV-01, CONV-02, CONV-03, CONV-04, CONV-05, CONV-06, GASTO-01, GASTO-02, GASTO-04, GASTO-05, GASTO-06
 **Success Criteria** (what must be TRUE):
-  1. `docker compose up` starts FastAPI, Postgres, and (stub) frontend containers without errors
-  2. All database tables exist with correct columns, constraints, and indexes after migrations run
-  3. The allowlist table exists and can be seeded with employee phone numbers
-  4. `ExtractedInvoice` Pydantic model and all supporting enums/types can be imported and instantiated without errors
-  5. All secrets (OpenAI key, WhatsApp token, DB URL) are loaded from environment variables; the app refuses to start if required vars are missing
-**Plans:** 2/2 plans complete
-Plans:
-- [ ] 01-PLAN-data-contract.md — Pydantic Settings + SQLAlchemy ORM schema + Alembic async scaffold + Wave 0 pytest suite (INF-01 schema, INF-03 fail-fast)
-- [ ] 01-PLAN-walking-skeleton.md — FastAPI app + GET /health + Vite/React scaffold + Dockerfiles + docker-compose.yml + human-verified end-to-end smoke
+  1. A unit test can drive the ConversationOrchestrator through every state transition (idle → awaiting_monto → awaiting_ticket → confirm → idle) using a mocked WhatsApp provider and mocked slot extractor — all transitions pass without touching WhatsApp or the network
+  2. A duplicate webhook message ID (matching `Conversation.last_message_id`) causes the orchestrator to exit without advancing state or writing any record — confirmed by test with a mocked DB session
+  3. Two concurrent orchestrator calls for the same sender are serialized by `SELECT ... FOR NO KEY UPDATE`; neither call reads stale state or produces a duplicate DB write — confirmed by test
+  4. A conversation row older than `CONVERSATION_TIMEOUT_HOURS` auto-resets to idle on the next inbound message, and the manager receives a Spanish-language timeout notice — confirmed by test
+  5. Argentine number strings "1.500" and "1.234,56" are parsed to Decimal("1500") and Decimal("1234.56") respectively by `parse_ars_amount()` — confirmed by unit test; Python's `Decimal("1.500")` trap documented and blocked
+  6. An unparseable reply re-prompts the current step; after 3 consecutive failures the bot sends a concrete example and offers to cancel — confirmed by test; GPT is never invoked on the confirmation step (deterministic string match only)
+**Plans**: TBD
 
-### Phase 2: Extraction Pipeline
-**Goal**: A developer can pass an invoice image to the ExtractionService and receive a structured, validated `ExtractedInvoice` with a confidence score — no WhatsApp required
-**Mode:** mvp
+### Phase 2: WhatsApp Gastos Flow
+**Goal**: An allowlisted manager can send a free-form Spanish expense intent on WhatsApp and the bot drives the full multi-turn capture — intent → follow-ups → ticket photo (or "sin ticket") → confirmation → saved gasto record — end-to-end via Twilio; AND the caja closing flow completes from an inbound reply
 **Depends on**: Phase 1
-**Requirements**: EXT-01, EXT-02, EXT-03, EXT-04, EXT-05, EXT-06, EXT-07, VAL-04, VAL-05
+**Requirements**: GASTO-03, CAJA-01, CAJA-02
 **Success Criteria** (what must be TRUE):
-  1. Submitting a Factura A image returns all AFIP fields (CUIT, CAE, tipo, número, fecha, IVA, percepciones) with correct values or null — never fabricated data
-  2. Submitting a Remito or lista informal image does not crash; nullable fields return null and tipo_comprobante is correctly identified
-  3. A confidence score between 0.0 and 1.0 is produced for every extraction, derived from non-null critical fields and cross-field consistency
-  4. The original invoice file is saved to the local filesystem via StorageBackend and the stored path is returned
-  5. Processing errors (download failure, extraction failure) are captured and logged with the originating message reference
-**Plans:** 3 plans
-Plans:
-**Wave 1**
-- [x] 02-01-PLAN.md — Wave 0 tests + StorageBackend + ExtractionService skeleton + debug-gated /extraction/test router
+  1. Sending "Pago de queso en supermercado $1500" from an allowlisted Twilio number triggers an immediate acknowledgement; the bot asks for missing fields; the gasto is saved in the DB after the manager replies "sí" — verifiable end-to-end on the Twilio sandbox
+  2. Sending a ticket photo at the `awaiting_ticket` step stores the image via LocalStorageBackend and links it to the gasto record; sending "sin ticket" at that step skips storage and the gasto is saved without a ticket path
+  3. Sending from a non-allowlisted number returns a Spanish rejection message and creates no DB record
+  4. A replayed webhook (identical Twilio `MessageSid`) does not advance state or create a duplicate record — confirmed against the live Twilio sandbox
+  5. The `/gastos/webhook` router returns HTTP 200 before any DB or GPT work begins (Twilio timeout safety) — verified with a timing test or log inspection
+  6. A manager who replies with a cash-on-hand amount in the caja-closing flow has a `CajaCierre` row written with the correct `hora_cierre` (12:00 or 17:00) and `fecha` — verifiable in the DB
+**Plans**: TBD
 
-**Wave 2** *(blocked on Wave 1 completion)*
-- [x] 02-02-PLAN.md — SYSTEM_PROMPT constant + hardened error semantics + EXT-01..EXT-07 + VAL-04 + VAL-05 mocked tests + integration marker
-- [x] 02-03-PLAN.md — calibrate_prompt.py (Claude Opus 4.7 ground truth + GPT-4o diff loop) + fixtures README + D-11 human done-gate
-
-### Phase 3: WhatsApp Pipeline
-**Goal**: An allowlisted employee can send an invoice photo on WhatsApp and receive a reply; the invoice data is stored in the database within seconds
-**Mode:** mvp
+### Phase 3: Prompt Trigger Endpoint
+**Goal**: A caller can POST to a protected endpoint with a manager's phone number and that manager immediately receives the prompt message on WhatsApp — the conversation engine then handles all follow-up replies via the existing Phase 2 webhook router
 **Depends on**: Phase 2
-**Requirements**: WA-01, WA-02, WA-03, WA-04, VAL-01, VAL-02, VAL-03, INF-02, INF-04
+**Requirements**: TRIG-01, TRIG-02
 **Success Criteria** (what must be TRUE):
-  1. Sending an invoice photo from an allowlisted number triggers an immediate acknowledgement reply (within 5 seconds) and the invoice is stored in the database after background processing
-  2. Sending from a non-allowlisted number returns an explanatory rejection message in Spanish and no database record is created
-  3. After extraction completes, the sender receives a reply summarising the extracted fields (proveedor, número, total, status)
-  4. Sending an unreadable image or unsupported file format produces an informative error reply to the sender
-  5. Submitting a duplicate invoice (same numero_documento + proveedor) does not create a second database record; the sender is notified
-  6. Inbound webhook requests with invalid HMAC-SHA256 signatures are rejected with HTTP 401; valid signatures are processed normally
-**Plans:** 2/2 plans complete
-Plans:
-**Wave 1**
-- [x] 03-01-PLAN.md — WhatsAppProvider Protocol + TwilioProvider + webhook (signature, allowlist, ack, asyncio.create_task hook) + Alembic UNIQUE migration
-
-**Wave 2** *(blocked on Wave 1 completion)*
-- [x] 03-02-PLAN.md — InvoiceService + process_invoice background pipeline (extract, dedup, save, summary/duplicate/error reply) + live Twilio sandbox verification
+  1. `POST /gastos/prompt` with a valid bearer token and a manager phone number returns HTTP 200 and the manager receives a WhatsApp message asking for pending payments, cash-on-hand, and "¿hiciste otra compra hoy?" — verifiable in the Twilio sandbox within a live demo session (24h customer-service window is open because the recipient has already messaged the bot)
+  2. `POST /gastos/prompt` with a missing or invalid token returns HTTP 401 — no message is sent
+  3. After receiving the triggered prompt, the manager can reply conversationally and the existing orchestrator handles the full capture / caja-closing branch without any additional endpoint — confirmed end-to-end in the sandbox
+**Plans**: TBD
 
 ### Phase 4: Admin UI
-**Goal**: A manager or accountant can open a browser, see all captured invoices, search and filter them, inspect details with line items, correct AI errors, and delete records
-**Mode:** mvp
+**Goal**: A manager or accountant can open the web UI and view all captured gastos and caja closings — read-only lists showing only committed records, not in-progress conversation drafts
 **Depends on**: Phase 3
-**Requirements**: UI-01, UI-02, UI-03, UI-04, UI-05, UI-06
+**Requirements**: UI-01, UI-02
 **Success Criteria** (what must be TRUE):
-  1. The invoice list loads with pagination; rows can be filtered by proveedor, fecha range, and status (auto_saved / pending_review / confirmed / rejected)
-  2. Searching by proveedor name, product description, or document number returns matching invoices
-  3. Clicking an invoice shows all document header fields and all extracted line items on one screen, including the original invoice image
-  4. Any extracted field (document-level or line-item) can be edited and saved directly in the UI
-  5. An invoice record can be deleted from the UI; the original file on disk is retained
-  6. Pending review invoices are visually distinguished (highlighted row or badge) in the list view
+  1. The Gastos page lists all rows from the `gastos` table (confirmed status only — no `conversations.draft_gasto` rows appear), with columns for fecha, concepto, lugar, monto, and ticket indicator; rows are filterable by date range and searchable by concepto or lugar
+  2. Clicking a gasto row shows the full detail: all fields, the ticket image (if present), and the ticket extraction JSON (if present)
+  3. The Cierres page lists all `caja_cierres` rows with fecha, hora_cierre (12:00 / 17:00), and efectivo_en_caja; no editing controls are shown (read-only)
 **Plans**: TBD
 **UI hint**: yes
 
@@ -97,7 +80,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 2/2 | Complete   | 2026-05-13 |
-| 2. Extraction Pipeline | 0/TBD | Not started | - |
-| 3. WhatsApp Pipeline | 2/2 | Complete    | 2026-05-14 |
+| 1. Data + Conversation Core | 0/TBD | Not started | - |
+| 2. WhatsApp Gastos Flow | 0/TBD | Not started | - |
+| 3. Prompt Trigger Endpoint | 0/TBD | Not started | - |
 | 4. Admin UI | 0/TBD | Not started | - |
