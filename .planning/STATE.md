@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Gastos Bot
-status: planning
-stopped_at: Phase 1 context gathered
-last_updated: "2026-05-27T19:20:25.653Z"
-last_activity: 2026-05-27 — v2.0 roadmap revised, Phase 3 changed from Proactive Scheduler to Prompt Trigger Endpoint
+status: executing
+stopped_at: "Completed Phase 01 Plan 01 (data foundation)"
+last_updated: "2026-05-27T23:10:00Z"
+last_activity: 2026-05-27 -- Phase 01 Plan 01 complete
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 4
+  completed_plans: 1
   percent: 0
 ---
 
@@ -23,17 +23,17 @@ See: .planning/PROJECT.md (updated 2026-05-27)
 **Core value:** An employee sends a photo of an invoice over WhatsApp and the data lands correctly in the database — no manual entry, no lost receipts.
 **v2.0 goal:** A conversational WhatsApp bot that lets restaurant managers capture cash expenses (gastos) and report twice-daily cash closings — so payments stop getting forgotten.
 **Demo build:** No proactive scheduler — a manual trigger endpoint stands in for the twice-daily prompts.
-**Current focus:** Phase 1 — Data + Conversation Core
+**Current focus:** Phase 01 — data-conversation-core
 
 ## Current Position
 
-Phase: 1 — Data + Conversation Core
-Plan: Not started
-Status: Roadmap revised (demo build: scheduler replaced by trigger endpoint) — ready for Phase 1 planning
-Last activity: 2026-05-27 — v2.0 roadmap revised, Phase 3 changed from Proactive Scheduler to Prompt Trigger Endpoint
+Phase: 01 (data-conversation-core) — EXECUTING
+Plan: 2 of 4
+Status: Executing Phase 01 (Plan 01 complete, Plan 02 next)
+Last activity: 2026-05-27 -- Phase 01 Plan 01 complete (ORM models, migration, config)
 
 ```
-Progress: [░░░░░░░░░░░░░░░░░░░░] 0% — 0/4 phases complete
+Progress: [███░░░░░░░] 25%
 ```
 
 ## Performance Metrics
@@ -55,6 +55,10 @@ Progress: [░░░░░░░░░░░░░░░░░░░░] 0% — 
 
 *Updated after each plan completion*
 
+| Phase | Plan | Duration | Tasks | Files |
+|-------|------|----------|-------|-------|
+| 01-data-conversation-core | P01 | 8m | 3 | 6 |
+
 ## Accumulated Context
 
 ### Decisions
@@ -72,6 +76,8 @@ Key decisions affecting v2.0 work:
 - **Trigger endpoint auth** — `POST /gastos/prompt` protected by bearer token (env var). Returns 401 on missing/invalid token, sends nothing.
 - **Scheduler skips active non-idle conversations** — applies to trigger endpoint too: if sender has a non-idle conversation when the endpoint fires, skip the send (prevents clobbering active draft).
 - **`FOR NO KEY UPDATE` (not `FOR UPDATE`)** — does not block FK-referencing child table inserts.
+- **RLS deferred from Phase 1** — enabling RLS with zero policies causes Postgres default-deny for non-owner app role; single-company v1 has no per-row tenancy benefit; tracked for a hardening phase with explicit policies + app-role test.
+- **CajaCierre created in Phase 1** — alongside conversations/gastos in one migration; no schema debt; reactive write is Phase 2.
 
 ### Pending Todos
 
@@ -104,10 +110,10 @@ None active.
 
 ## Session Continuity
 
-Last session: 2026-05-27T19:20:25.647Z
-Stopped at: Phase 1 context gathered
-Resume: Run `/gsd:plan-phase 1` to begin Phase 1 planning
+Last session: 2026-05-27T23:10:00Z
+Stopped at: Completed Phase 01 Plan 01 — data foundation (ORM models, migration, config)
+Resume: Run `/gsd:execute-phase 1` to continue with Plan 02
 
 ## Operator Next Steps
 
-- Run `/gsd:plan-phase 1` to plan Phase 1: Data + Conversation Core
+- Run `/gsd:execute-phase 1` to execute Phase 01 Plan 02 (slot extraction service)

@@ -26,7 +26,7 @@ See `docs/plans/2026-05-27-gastos-bot-design.md` and `.planning/research/SUMMARY
 
 ### Conversation Engine (CONV)
 
-- [ ] **CONV-01**: Conversation state is persisted per sender in the database and survives process restarts
+- [x] **CONV-01**: Conversation state is persisted per sender in the database and survives process restarts
 - [ ] **CONV-02**: Duplicate WhatsApp webhook deliveries do not advance state or create duplicate records (DB-backed idempotency)
 - [ ] **CONV-03**: Concurrent messages from the same sender are serialized so state cannot be corrupted (per-sender row lock)
 - [ ] **CONV-04**: A stale/abandoned conversation auto-resets to idle on the next message after a timeout
@@ -75,7 +75,7 @@ See `docs/plans/2026-05-27-gastos-bot-design.md` and `.planning/research/SUMMARY
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CONV-01 | Phase 1 | Pending |
+| CONV-01 | Phase 1 | Complete |
 | CONV-02 | Phase 1 | Pending |
 | CONV-03 | Phase 1 | Pending |
 | CONV-04 | Phase 1 | Pending |
