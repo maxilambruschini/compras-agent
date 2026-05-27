@@ -1,8 +1,8 @@
 ---
 phase: 1
 slug: data-conversation-core
-status: draft
-nyquist_compliant: false
+status: ready
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-05-27
 ---
@@ -38,7 +38,14 @@ created: 2026-05-27
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| (filled by planner) | | | | | | unit | `cd backend && pytest -q` | ❌ W0 | ⬜ pending |
+| 01-01-01 | 01 | 1 | CONV-01 | — | ORM models import + tables defined | unit | `cd backend && python -c "from app.db.models import Gasto, Conversation, CajaCierre"` | ❌ W0 | ⬜ pending |
+| 01-01-02 | 01 | 1 | CONV-01 | T-01-AGENT | AGENT_MODE gates webhook registration; defaults correct | unit | `cd backend && pytest tests/test_config.py -q` | ❌ W0 | ⬜ pending |
+| 01-01-03 | 01 | 1 | CONV-01 | T-01-RLS | gastos/conversations/caja_cierres migrate; conversation row persists | unit | `cd backend && pytest tests/test_gastos_models.py -x -q` | ❌ W0 | ⬜ pending |
+| 01-02-01 | 02 | 2 | CONV-05 | T-02-AMT | `parse_ars_amount` blocks the Decimal("1.500") trap | unit | `cd backend && pytest tests/test_amounts.py -x -q` | ❌ W0 | ⬜ pending |
+| 01-02-02 | 02 | 2 | GASTO-01 | T-02-INJ | slot extraction (gpt-4o-mini) returns Optional slots; refusal-checked | unit | `cd backend && pytest tests/test_slot_extraction.py -x -q` | ❌ W0 | ⬜ pending |
+| 01-03-01 | 03 | 3 | GASTO-05 | T-03-PERSIST | confirmed draft → committed gastos row, orchestrator owns commit | unit | `cd backend && pytest tests/test_gasto_service.py -x -q` | ❌ W0 | ⬜ pending |
+| 01-04-01 | 04 | 4 | CONV-02, CONV-03, CONV-04 | T-04-IDEM / T-04-LOCK / T-04-TMO | idempotency no-op, FOR NO KEY UPDATE lock, 4h timeout reset | unit | `cd backend && pytest tests/test_conversation.py -k "row_lock or idempotency or timeout or cancelar" -x -q` | ❌ W0 | ⬜ pending |
+| 01-04-02 | 04 | 4 | CONV-06, GASTO-02, GASTO-04, GASTO-06 | T-04-CONFIRM | one-at-a-time slot flow, sin-ticket, deterministic confirm (no LLM), reprompt counter | unit | `cd backend && pytest tests/test_conversation.py -x -q` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -66,11 +73,11 @@ created: 2026-05-27
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 30s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references (TDD: each task writes its failing test first)
+- [x] No watch-mode flags
+- [x] Feedback latency < 30s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-05-27 (per-task map populated; wave_0_complete remains false — TDD fixtures created as the first step of each task during execution)
