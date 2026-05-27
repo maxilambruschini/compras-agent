@@ -248,3 +248,178 @@ npm install @supabase/supabase-js @tanstack/react-query react-router-dom
 - WhatsApp webhook signature: https://hookdeck.com/webhooks/guides/how-to-implement-sha256-webhook-signature-verification
 - Supabase key migration (publishable keys): Supabase docs search result, 2026
 - TanStack Query v5: Context7 /tanstack/query
+
+---
+
+## v2.0 Gastos Bot — Stack Additions
+
+**Researched:** 2026-05-27
+**Scope:** Only the two net-new behaviors added in milestone v2.0. The entire v1.0 stack above is fixed and reused unchanged.
+
+The new behaviors are:
+1. In-process scheduler firing twice-daily proactive WhatsApp prompts (12:00 and 17:00 `America/Argentina/Buenos_Aires`)
+2. Hybrid conversation engine: LLM slot extraction + deterministic state machine driving required questions and the DB write
+
+### New Core Addition: Scheduler
+
+| Technology | Version | Purpose | Why |
+|------------|---------|---------|-----|
+| APScheduler | **3.11.2** | In-process twice-daily job scheduler | Single new dep. `AsyncIOScheduler` runs in the existing Uvicorn event loop. `CronTrigger` natively accepts IANA timezone strings in 3.11+ (`"America/Argentina/Buenos_Aires"` — no pytz needed). Integrates cleanly with FastAPI `lifespan`. v4 series is alpha-only and explicitly not production-safe per the maintainer. |
+
+**FastAPI lifespan integration pattern:**
+
+```python
+# app/main.py
+from contextlib import asynccontextmanager
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+
+scheduler = AsyncIOScheduler(timezone="America/Argentina/Buenos_Aires")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    scheduler.add_job(
+        send_midday_prompt,
+        CronTrigger(hour=12, minute=0),
+        id="midday_prompt",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        send_afternoon_prompt,
+        CronTrigger(hour=17, minute=0),
+        id="afternoon_prompt",
+        replace_existing=True,
+    )
+    scheduler.start()
+    yield
+    scheduler.shutdown(wait=False)
+
+app = FastAPI(lifespan=lifespan)
+```
+
+**Timezone:** APScheduler 3.11.0 added `zoneinfo` support and deprecated pytz. Pass `timezone="America/Argentina/Buenos_Aires"` as a string — the stdlib `zoneinfo` module resolves it. Do not install `pytz`. On Alpine/minimal Docker images, add `tzdata` to get the IANA database (not needed on Debian/Ubuntu/macOS).
+
+**Jobstore:** Use the default `MemoryJobStore`. The two jobs are statically defined at startup with `replace_existing=True`, so they are re-registered on every process start. Losing them on a restart means a prompt doesn't fire that restart-day — acceptable for a ~2 jobs/day use case at a single restaurant. `SQLAlchemyJobStore` on the existing Postgres instance is available if persistence becomes important, but adds serialization complexity for no practical benefit here.
+
+**Multi-worker caveat:** Single-worker Uvicorn (correct for this volume) means exactly one scheduler instance, no duplicate fires. If Gunicorn multi-worker is ever adopted, the scheduler must move to an external cron or add a leader-election file lock. Document this in `app/services/scheduler.py` as a comment.
+
+### New Core Addition: Conversation Engine
+
+**Decision: hand-rolled state machine + existing OpenAI client. No new library.**
+
+The v2.0 conversation graph has exactly 5 states and 2 flows:
+
+```
+idle → awaiting_monto → awaiting_ticket → confirm → idle
+idle → awaiting_caja_count → idle  (with optional branch into gasto flow)
+```
+
+This is a `match` statement in a 100-line orchestrator. No state machine library adds value at this scale:
+
+- **`transitions` 0.9.3** (July 2025, MIT, Python 3.8–3.13): sound library, but its object-oriented wrapping of `Machine`, `State`, and callbacks is overhead for 5 states expressed more clearly as a plain `match`. Adds a dependency future maintainers must understand.
+- **LangGraph**: designed for multi-agent graphs with parallelism, mid-flow checkpointing, and 35+ model backends. Brings LangChain as a transitive dependency. Break-even is roughly 2+ cooperative agents or 3+ branching decisions that produce partial results worth preserving independently. This bot has 1 agent and linear state progression.
+- **Rasa / Dialogflow**: full NLU platforms. Out of scope for a closed transactional bot where GPT-4o handles all language understanding.
+
+**Build instead:**
+
+```python
+# app/services/conversation.py
+
+from enum import StrEnum
+
+class ConvState(StrEnum):
+    IDLE = "idle"
+    AWAITING_MONTO = "awaiting_monto"
+    AWAITING_TICKET = "awaiting_ticket"
+    CONFIRM = "confirm"
+    AWAITING_CAJA_COUNT = "awaiting_caja_count"
+
+async def handle_message(
+    conv: Conversation,
+    text: str | None,
+    media_url: str | None,
+) -> str:
+    match conv.state:
+        case ConvState.IDLE:
+            slots = await extract_slots(text)  # GPT call, returns GastoSlots
+            ...
+        case ConvState.AWAITING_MONTO:
+            ...
+        # etc.
+    # always: persist updated conv row, return reply text
+```
+
+State survives in the `conversations` table (one row per sender). The orchestrator loads, runs one transition, writes back. GPT is called only for free-text slot extraction — code owns all transitions and the DB write decision. Any unparseable reply re-asks the current slot.
+
+### Slot Extraction: Existing OpenAI Client (no new library)
+
+Add a small Pydantic model alongside the existing extraction schemas:
+
+```python
+class GastoSlots(BaseModel):
+    concepto: Optional[str] = None
+    lugar: Optional[str] = None
+    monto: Optional[Decimal] = None
+```
+
+Use the existing `client.chat.completions.parse()` pattern. One structured output call on a short Spanish string. Cost: <$0.001 per extraction at current pricing.
+
+### v2.0 Supporting Libraries
+
+| Library | Version | Purpose | When to Use |
+|---------|---------|---------|-------------|
+| `apscheduler` | 3.11.2 | In-process cron scheduler | Add to `requirements.txt`. Only new backend dep for v2.0. |
+| `tzdata` | latest | IANA timezone database | Add only if deploying on Alpine/minimal Linux containers where `/usr/share/zoneinfo` is absent. Not needed on Debian-based images or macOS. |
+
+No frontend package additions for scheduler or conversation engine. New admin views (gastos list, cierres list) reuse existing TanStack Query + React Router patterns.
+
+### v2.0 Installation Delta
+
+```bash
+# requirements.txt — add one line
+apscheduler==3.11.2
+# Optional — Alpine containers only:
+tzdata
+```
+
+### Alternatives Considered (v2.0)
+
+| Recommended | Alternative | When to Use Alternative |
+|-------------|-------------|-------------------------|
+| APScheduler 3.11.2 in-process | External cron → protected HTTP endpoint | Use when: Gunicorn multi-worker is deployed (prevents duplicate fires), team already runs Kubernetes CronJobs, or the deployment environment doesn't allow long-running background threads. For a single-process single-restaurant deployment, in-process is simpler and zero new infra. |
+| APScheduler 3.11.2 | Celery + Redis | Celery is warranted for high-volume async task queues with retry logic (thousands/day). For 2 static daily jobs, Celery is 10x the operational overhead and requires a Redis broker. |
+| APScheduler 3.11.2 | APScheduler 4.0.0a6 | Use v4 when it reaches stable. The revised API (`AsyncScheduler`, `add_schedule()`, `ConflictPolicy`) is cleaner and more explicitly async. Not production-safe today — maintainer states it "may change in backwards incompatible fashion without any migration pathway." |
+| Hand-rolled `match` | `transitions` 0.9.3 | Use `transitions` if the state graph grows beyond ~10 states, needs hierarchy (nested states), or requires diagram generation for documentation. At 5 linear states, it adds a dep with no concrete benefit. |
+| Hand-rolled `match` | LangGraph | Use LangGraph if design evolves to multiple cooperative agents, parallel branches, or workflows where partial runs need independent checkpointing. Out of scope for v2.0. |
+
+### What NOT to Add (v2.0)
+
+| Avoid | Why | Use Instead |
+|-------|-----|-------------|
+| Celery | Brings Redis dep, worker process management, serialization config — all to fire 2 cron jobs per day. Zero benefit at this scale. | APScheduler 3.11.2 in-process |
+| Redis | No caching or queue requirement exists in v2.0. Would only be added to support Celery. | Postgres already present |
+| APScheduler 4.x (alpha) | Maintainer explicitly marks it not production-safe; API may break without migration path. | APScheduler 3.11.2 |
+| pytz | Deprecated by APScheduler 3.11+ in favor of `zoneinfo`. Installing it alongside APScheduler 3.11 creates version confusion. | `zoneinfo` stdlib (Python 3.9+, present in 3.12) |
+| LangGraph / LangChain | Large dependency graph, own serialization layer, LCEL mental model. Bot has 5 states and 2 linear flows — no benefit. | Hand-rolled `match` in `conversation.py` |
+| `transitions` library | Adds a dep for a machine trivially expressed as a `match` block + `StrEnum`. | Native Python `match` + `StrEnum` |
+| Rasa / Dialogflow / any NLU platform | Platform-level conversation routing. Comically over-scoped for a closed transactional bot with 2 flows. | GPT-4o slot extraction (already in use) |
+
+### Version Compatibility (v2.0 additions)
+
+| Package | Compatible With | Notes |
+|---------|-----------------|-------|
+| APScheduler 3.11.2 | Python 3.9–3.13 | Python 3.12 is in use — no issues. |
+| APScheduler 3.11.2 | FastAPI 0.136 / Uvicorn | `AsyncIOScheduler` runs in the same asyncio event loop as Uvicorn. `lifespan` is the correct integration point — do not use deprecated `@app.on_event`. |
+| APScheduler 3.11.2 | SQLAlchemy 2.x | Compatible if `SQLAlchemyJobStore` is used (not recommended for this deployment). |
+| `zoneinfo` (stdlib) | Python 3.9+ | Available in Python 3.12 with no install. Add `tzdata` package on Alpine containers only. |
+| APScheduler 3.11.2 | pytz | Do NOT install pytz alongside APScheduler 3.11+. It is deprecated and the version resolution creates confusion. |
+
+### Sources (v2.0)
+
+- APScheduler PyPI: https://pypi.org/project/APScheduler/ (verified 2026-05-27, stable = 3.11.2, alpha = 4.0.0a6)
+- APScheduler 3.11.0 release notes: https://github.com/agronholm/apscheduler/releases/tag/3.11.0 (verified: zoneinfo support added, pytz deprecated)
+- APScheduler 3.x user guide: https://apscheduler.readthedocs.io/en/3.x/userguide.html (MemoryJobStore default; SQLAlchemyJobStore for persistence)
+- Context7 `/agronholm/apscheduler` — FastAPI lifespan integration, CronTrigger API, SQLAlchemy data store patterns (HIGH confidence)
+- `transitions` PyPI: https://pypi.org/project/transitions/ (verified 2026-05-27, version 0.9.3, released July 2025)
+- LangGraph break-even analysis — community consensus across multiple sources: single-flow bots do not benefit (MEDIUM confidence)
+- APScheduler 4.x production guidance — PyPI pre-release warning + maintainer GitHub discussions (HIGH confidence)
