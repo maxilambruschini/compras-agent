@@ -102,8 +102,13 @@ def _clear_module_state():
 
 
 @pytest_asyncio.fixture
-async def webhook_client(db_session):
-    """ASGI client for the WhatsApp webhook with mocked provider and DB."""
+async def webhook_client(db_session, monkeypatch):
+    """ASGI client for the WhatsApp webhook with mocked provider and DB.
+
+    Forces AGENT_MODE=invoice so create_app() mounts the invoice webhook router
+    (the suite's default AGENT_MODE is "gastos", which intentionally leaves it unmounted).
+    """
+    monkeypatch.setenv("AGENT_MODE", "invoice")
     get_settings.cache_clear()
 
     from app.main import create_app
@@ -269,6 +274,7 @@ async def test_webhook_url_passed_to_validator(webhook_client, db_session):
 @pytest.mark.asyncio
 async def test_webhook_base_url_overrides_request_url(db_session, monkeypatch):
     """When WEBHOOK_BASE_URL is set, validate_signature receives the override URL."""
+    monkeypatch.setenv("AGENT_MODE", "invoice")
     monkeypatch.setenv("WEBHOOK_BASE_URL", "https://abcd.ngrok-free.app")
     get_settings.cache_clear()
 
@@ -460,8 +466,9 @@ def _make_session_local_mock(db_session):
 
 
 @pytest_asyncio.fixture
-async def process_invoice_client(db_session):
+async def process_invoice_client(db_session, monkeypatch):
     """ASGI client with mocked provider and DB override — shared base for process_invoice tests."""
+    monkeypatch.setenv("AGENT_MODE", "invoice")
     get_settings.cache_clear()
     from app.main import create_app
     from app.db.session import get_db
