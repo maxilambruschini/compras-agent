@@ -4,6 +4,16 @@
 **Status:** Approved design, ready for roadmap
 **Builds on:** Milestone v1.0 (invoice-capture system, 4 phases shipped)
 
+> **Demo-build amendment (2026-05-27):** This is a demo, not production. The
+> time-based **proactive scheduler (APScheduler) described below is dropped** and
+> replaced by a **manual prompt-trigger endpoint** (`POST /gastos/prompt`) that fires
+> the prompt on demand during a demo. Because the recipient has just messaged the bot,
+> the WhatsApp 24h customer-service window is open, so **no Utility message template is
+> needed**. The real scheduler + template are the deferred production path. See
+> `.planning/REQUIREMENTS.md` (TRIG-01/02) and `.planning/ROADMAP.md` Phase 3, which
+> are the authoritative source for planning. Sections B and "Build sequence" below are
+> retained for production context only.
+
 ## Problem
 
 Restaurant managers pay cash for ad-hoc merchandise (milk, ice, vegetables, etc.)
