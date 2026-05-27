@@ -50,6 +50,9 @@ def env_setup():
     mp.setenv("TWILIO_ACCOUNT_SID", "test-twilio-sid")
     mp.setenv("TWILIO_AUTH_TOKEN", "test-twilio-token")
     mp.setenv("TWILIO_FROM_NUMBER", "whatsapp:+14155238886")
+    # v2.0 Gastos Bot: set AGENT_MODE so Settings sees the new field in all tests.
+    # CONVERSATION_TIMEOUT_HOURS is intentionally omitted — the int default of 4 is sufficient.
+    mp.setenv("AGENT_MODE", "gastos")
     # NOTE: WEBHOOK_BASE_URL is NOT set at session scope; individual tests that need it
     # must patch it via monkeypatch and call get_settings.cache_clear() before/after.
 

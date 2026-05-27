@@ -24,6 +24,16 @@ class Settings(BaseSettings):
     confidence_threshold: float = 0.85
     storage_path: str = "/data/invoices"
 
+    # Agent selection (D-09 — v2.0 demo isolation)
+    # "gastos" = Gastos Bot demo (default for v2.0 milestone)
+    # "invoice" = v1.0 invoice extraction demo
+    agent_mode: str = "gastos"
+
+    # Conversation timeout in hours (D-08)
+    # A conversation row whose updated_at is older than this threshold auto-resets to idle
+    # on the next inbound message. Uses the existing updated_at column — no extra column needed.
+    conversation_timeout_hours: int = 4
+
     # WhatsApp provider selection (D-04)
     whatsapp_provider: str = "twilio"  # "twilio" | "meta"
 

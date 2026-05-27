@@ -51,10 +51,17 @@ def create_app() -> FastAPI:
 
         app.include_router(extraction_router, prefix="/extraction", tags=["extraction"])
 
-    # WhatsApp webhook — always registered; provider selected via WHATSAPP_PROVIDER env var
-    from app.routers.whatsapp import router as whatsapp_router
+    # T-01-04: agent_mode is read once here at app construction and only gates which router
+    # mounts — there is no runtime flip path. Default "gastos" fails closed to the intended
+    # demo agent. Misconfig (unknown value) results in neither router mounting, which is safe.
+    if settings.agent_mode == "invoice":
+        # v1.0 invoice extraction agent — WhatsApp webhook registered only in this mode
+        from app.routers.whatsapp import router as whatsapp_router
 
-    app.include_router(whatsapp_router, prefix="/whatsapp", tags=["whatsapp"])
+        app.include_router(whatsapp_router, prefix="/whatsapp", tags=["whatsapp"])
+    # elif settings.agent_mode == "gastos":
+    #     Gastos Bot webhook wired in Phase 2 — router does not exist yet.
+    #     No router registered here for gastos mode (D-09 demo isolation seam).
 
     return app
 
