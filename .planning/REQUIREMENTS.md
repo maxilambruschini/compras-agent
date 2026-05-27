@@ -21,7 +21,7 @@ See `docs/plans/2026-05-27-gastos-bot-design.md` and `.planning/research/SUMMARY
 - [ ] **GASTO-02**: Bot collects the required gasto fields (concepto, lugar/proveedor, monto) through follow-up questions when not provided up front
 - [ ] **GASTO-03**: Bot requests a photo of the ticket and stores it linked to the gasto record
 - [ ] **GASTO-04**: Manager can skip the ticket ("sin ticket") and still save the gasto
-- [ ] **GASTO-05**: Bot shows a summary and requires explicit confirmation before writing the gasto
+- [x] **GASTO-05**: Bot shows a summary and requires explicit confirmation before writing the gasto
 - [ ] **GASTO-06**: Manager can correct a field or cancel the gasto before it is saved
 
 ### Conversation Engine (CONV)
@@ -84,7 +84,7 @@ See `docs/plans/2026-05-27-gastos-bot-design.md` and `.planning/research/SUMMARY
 | GASTO-01 | Phase 1 | Complete |
 | GASTO-02 | Phase 1 | Pending |
 | GASTO-04 | Phase 1 | Pending |
-| GASTO-05 | Phase 1 | Pending |
+| GASTO-05 | Phase 1 | Complete |
 | GASTO-06 | Phase 1 | Pending |
 | GASTO-03 | Phase 2 | Pending |
 | CAJA-01 | Phase 2 | Pending |

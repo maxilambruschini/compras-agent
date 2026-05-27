@@ -40,7 +40,7 @@
 **Plans**: 4 plans
 - [x] 01-01-PLAN.md — Data foundation: Gasto/Conversation/CajaCierre models, migration, config (AGENT_MODE, timeout), main.py seam
 - [x] 01-02-PLAN.md — Slot extraction: GastoSlots/DraftGasto DTOs, parse_ars_amount(), SlotExtractionService (gpt-4o-mini)
-- [ ] 01-03-PLAN.md — GastoService persistence (mirrors InvoiceService)
+- [x] 01-03-PLAN.md — GastoService persistence (mirrors InvoiceService)
 - [ ] 01-04-PLAN.md — ConversationOrchestrator: match-based FSM, lock, idempotency, timeout, re-prompt, confirm gate
 
 ### Phase 2: WhatsApp Gastos Flow
@@ -84,7 +84,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Data + Conversation Core | 2/4 | In Progress|  |
+| 1. Data + Conversation Core | 3/4 | In Progress|  |
 | 2. WhatsApp Gastos Flow | 0/TBD | Not started | - |
 | 3. Prompt Trigger Endpoint | 0/TBD | Not started | - |
 | 4. Admin UI | 0/TBD | Not started | - |
