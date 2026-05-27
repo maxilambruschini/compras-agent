@@ -106,3 +106,81 @@ class SenderAllowlist(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+
+# ---------------------------------------------------------------------------
+# v2.0 Gastos Bot models
+# ---------------------------------------------------------------------------
+
+
+class Conversation(Base):
+    """Per-sender conversation state for the Gastos Bot.
+
+    sender_phone is the primary key (one active conversation per sender).
+    updated_at uses onupdate=func.now() — this is the D-08 timeout anchor:
+    the orchestrator checks this column against CONVERSATION_TIMEOUT_HOURS.
+    Always reassign conv.draft_gasto = new_string (not mutate in-place) so
+    SQLAlchemy change-tracking fires and updated_at is refreshed (Pitfall E).
+    """
+    __tablename__ = "conversations"
+
+    sender_phone: Mapped[str] = mapped_column(String(30), primary_key=True)
+    state: Mapped[str] = mapped_column(String(30), nullable=False, default="idle")
+    draft_gasto: Mapped[Optional[str]] = mapped_column(Text)  # JSON dump of DraftGasto
+    last_message_id: Mapped[Optional[str]] = mapped_column(String(100))  # CONV-02 idempotency key
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    __table_args__ = (
+        Index("ix_conversations_sender_phone", "sender_phone"),
+    )
+
+
+class Gasto(Base):
+    """Committed cash expense record — written only after explicit confirmation (D-05).
+
+    Field set follows D-01 minimal schema: concepto (freeform observación),
+    monto (salida / amount paid out, Decimal), fecha (auto = today per D-02),
+    optional ticket_image_path (populated in Phase 2, GASTO-04 allows None).
+    NO lugar/proveedor/entrada/category — deferred per D-01.
+    """
+    __tablename__ = "gastos"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    fecha: Mapped[date] = mapped_column(Date, nullable=False)
+    concepto: Mapped[str] = mapped_column(Text, nullable=False)
+    monto: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)  # ARS pesos salida
+    ticket_image_path: Mapped[Optional[str]] = mapped_column(Text)  # Phase 2; None is valid
+    sender_phone: Mapped[str] = mapped_column(String(30), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    __table_args__ = (
+        Index("ix_gastos_fecha", "fecha"),
+        Index("ix_gastos_sender_phone", "sender_phone"),
+    )
+
+
+class CajaCierre(Base):
+    """Twice-daily cash-closing record (12:00 / 17:00).
+
+    Created here in Phase 1 alongside the other gastos tables so all three
+    land in a single Alembic migration. The reactive write (when a manager
+    reports efectivo en caja) is implemented in Phase 2.
+    """
+    __tablename__ = "caja_cierres"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    fecha: Mapped[date] = mapped_column(Date, nullable=False)
+    hora_cierre: Mapped[str] = mapped_column(String(5), nullable=False)  # "12:00" | "17:00"
+    efectivo_en_caja: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    sender_phone: Mapped[str] = mapped_column(String(30), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    __table_args__ = (
+        Index("ix_caja_cierres_fecha", "fecha"),
+    )
