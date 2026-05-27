@@ -249,7 +249,7 @@ async def test_idempotency(db_session: AsyncSession) -> None:
         last_message_id="msg-1",
     )
     db_session.add(conv)
-    await db_session.flush()
+    await db_session.commit()  # commit so the orchestrator can begin its own transaction
 
     provider = AsyncMock()
     slot_service = AsyncMock()
@@ -299,7 +299,7 @@ async def test_idempotency_rollback_on_db_failure(db_session: AsyncSession) -> N
         last_message_id="msg-0",
     )
     db_session.add(conv)
-    await db_session.flush()
+    await db_session.commit()  # commit so orchestrator can begin its own transaction
 
     # Force a DB error during the turn by making slot_service.extract raise
     slot_service = AsyncMock()
@@ -410,7 +410,7 @@ async def test_timeout_reset(db_session: AsyncSession) -> None:
         .where(Conversation.sender_phone == NORM_SENDER)
         .values(updated_at=old_time)
     )
-    await db_session.flush()
+    await db_session.commit()  # commit so orchestrator can begin its own transaction
 
     provider = AsyncMock()
     slot_service = AsyncMock()
@@ -475,7 +475,7 @@ async def test_timeout_uses_preload_snapshot(db_session: AsyncSession) -> None:
         .where(Conversation.sender_phone == NORM_SENDER)
         .values(updated_at=old_time)
     )
-    await db_session.flush()
+    await db_session.commit()  # commit so orchestrator can begin its own transaction
 
     provider = AsyncMock()
     orch = await _make_orchestrator(provider=provider)
@@ -513,7 +513,7 @@ async def test_cancelar(db_session: AsyncSession) -> None:
         last_message_id="msg-prev",
     )
     db_session.add(conv)
-    await db_session.flush()
+    await db_session.commit()
 
     provider = AsyncMock()
     orch = await _make_orchestrator(provider=provider)
@@ -549,7 +549,7 @@ async def test_cancelar_from_confirm(db_session: AsyncSession) -> None:
         last_message_id="msg-prev",
     )
     db_session.add(conv)
-    await db_session.flush()
+    await db_session.commit()
 
     provider = AsyncMock()
     gasto_service = MagicMock()
@@ -673,7 +673,7 @@ async def test_sin_ticket(db_session: AsyncSession) -> None:
         last_message_id="msg-prev",
     )
     db_session.add(conv)
-    await db_session.flush()
+    await db_session.commit()
 
     provider = AsyncMock()
     orch = await _make_orchestrator(provider=provider)
@@ -708,7 +708,7 @@ async def test_confirm_saves_gasto(db_session: AsyncSession) -> None:
         last_message_id="msg-prev",
     )
     db_session.add(conv)
-    await db_session.flush()
+    await db_session.commit()
 
     provider = AsyncMock()
     slot_service = AsyncMock()
@@ -755,7 +755,7 @@ async def test_confirm_requires_exact_token(db_session: AsyncSession) -> None:
         last_message_id="msg-prev",
     )
     db_session.add(conv)
-    await db_session.flush()
+    await db_session.commit()
 
     slot_service = AsyncMock()
     # Correction re-extracts monto 1500
@@ -802,7 +802,7 @@ async def test_confirm_si_no_tiene_ticket_is_correction(db_session: AsyncSession
         last_message_id="msg-prev",
     )
     db_session.add(conv)
-    await db_session.flush()
+    await db_session.commit()
 
     slot_service = AsyncMock()
     slot_service.extract = AsyncMock(return_value=GastoSlots())  # nothing new extracted
@@ -838,7 +838,7 @@ async def test_reprompt_counter(db_session: AsyncSession) -> None:
         last_message_id="msg-prev",
     )
     db_session.add(conv)
-    await db_session.flush()
+    await db_session.commit()
 
     # Extractor always returns no monto and parse_ars_amount will also fail
     slot_service = AsyncMock()
@@ -885,7 +885,7 @@ async def test_reprompt_counter_resets_on_success(db_session: AsyncSession) -> N
         last_message_id="msg-prev",
     )
     db_session.add(conv)
-    await db_session.flush()
+    await db_session.commit()
 
     slot_service = AsyncMock()
     # This time extraction succeeds with a valid monto
