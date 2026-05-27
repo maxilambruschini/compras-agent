@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Gastos Bot
 status: executing
-stopped_at: "Completed Phase 01 Plan 01 (data foundation)"
-last_updated: "2026-05-27T23:10:00Z"
-last_activity: 2026-05-27 -- Phase 01 Plan 01 complete
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-05-27T23:15:20.986Z"
+last_activity: 2026-05-27
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -28,12 +28,12 @@ See: .planning/PROJECT.md (updated 2026-05-27)
 ## Current Position
 
 Phase: 01 (data-conversation-core) — EXECUTING
-Plan: 2 of 4
-Status: Executing Phase 01 (Plan 01 complete, Plan 02 next)
-Last activity: 2026-05-27 -- Phase 01 Plan 01 complete (ORM models, migration, config)
+Plan: 3 of 4
+Status: Ready to execute
+Last activity: 2026-05-27
 
 ```
-Progress: [███░░░░░░░] 25%
+Progress: [█████░░░░░] 50%
 ```
 
 ## Performance Metrics
@@ -58,6 +58,7 @@ Progress: [███░░░░░░░] 25%
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
 | 01-data-conversation-core | P01 | 8m | 3 | 6 |
+| Phase 01-data-conversation-core P02 | 15 minutes | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,8 @@ Key decisions affecting v2.0 work:
 - **`FOR NO KEY UPDATE` (not `FOR UPDATE`)** — does not block FK-referencing child table inserts.
 - **RLS deferred from Phase 1** — enabling RLS with zero policies causes Postgres default-deny for non-owner app role; single-company v1 has no per-row tenancy benefit; tracked for a hardening phase with explicit policies + app-role test.
 - **CajaCierre created in Phase 1** — alongside conversations/gastos in one migration; no schema debt; reactive write is Phase 2.
+- [Phase ?]: GastoSlots.monto is Optional[float] — GPT JSON number sidesteps Decimal trap
+- [Phase ?]: parse_ars_amount() validates ARS format via regex before stripping separators
 
 ### Pending Todos
 
@@ -110,8 +113,8 @@ None active.
 
 ## Session Continuity
 
-Last session: 2026-05-27T23:10:00Z
-Stopped at: Completed Phase 01 Plan 01 — data foundation (ORM models, migration, config)
+Last session: 2026-05-27T23:15:20.980Z
+Stopped at: Completed 01-02-PLAN.md
 Resume: Run `/gsd:execute-phase 1` to continue with Plan 02
 
 ## Operator Next Steps

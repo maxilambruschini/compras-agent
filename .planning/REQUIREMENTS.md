@@ -17,7 +17,7 @@ See `docs/plans/2026-05-27-gastos-bot-design.md` and `.planning/research/SUMMARY
 
 ### Gasto Capture (GASTO)
 
-- [ ] **GASTO-01**: Manager records a cash expense by texting a free-form intent in Spanish (e.g. "Pago de queso en supermercado")
+- [x] **GASTO-01**: Manager records a cash expense by texting a free-form intent in Spanish (e.g. "Pago de queso en supermercado")
 - [ ] **GASTO-02**: Bot collects the required gasto fields (concepto, lugar/proveedor, monto) through follow-up questions when not provided up front
 - [ ] **GASTO-03**: Bot requests a photo of the ticket and stores it linked to the gasto record
 - [ ] **GASTO-04**: Manager can skip the ticket ("sin ticket") and still save the gasto
@@ -30,7 +30,7 @@ See `docs/plans/2026-05-27-gastos-bot-design.md` and `.planning/research/SUMMARY
 - [ ] **CONV-02**: Duplicate WhatsApp webhook deliveries do not advance state or create duplicate records (DB-backed idempotency)
 - [ ] **CONV-03**: Concurrent messages from the same sender are serialized so state cannot be corrupted (per-sender row lock)
 - [ ] **CONV-04**: A stale/abandoned conversation auto-resets to idle on the next message after a timeout
-- [ ] **CONV-05**: Argentine number formats are parsed correctly ("1.500" = $1.500, "1.234,56" = $1234.56)
+- [x] **CONV-05**: Argentine number formats are parsed correctly ("1.500" = $1.500, "1.234,56" = $1234.56)
 - [ ] **CONV-06**: Unparseable or off-topic replies re-prompt the current step instead of failing silently
 
 ### Caja Closing (CAJA)
@@ -79,9 +79,9 @@ See `docs/plans/2026-05-27-gastos-bot-design.md` and `.planning/research/SUMMARY
 | CONV-02 | Phase 1 | Pending |
 | CONV-03 | Phase 1 | Pending |
 | CONV-04 | Phase 1 | Pending |
-| CONV-05 | Phase 1 | Pending |
+| CONV-05 | Phase 1 | Complete |
 | CONV-06 | Phase 1 | Pending |
-| GASTO-01 | Phase 1 | Pending |
+| GASTO-01 | Phase 1 | Complete |
 | GASTO-02 | Phase 1 | Pending |
 | GASTO-04 | Phase 1 | Pending |
 | GASTO-05 | Phase 1 | Pending |
