@@ -89,9 +89,8 @@ def test_gasto_slots_monto_is_optional_float():
 
 def test_gasto_slots_no_extra_fields():
     """GastoSlots has only concepto and monto — D-01 minimal field set (no lugar/proveedor/category)."""
-    slots = GastoSlots()
-    # Only concepto and monto fields allowed
-    assert set(slots.model_fields.keys()) == {"concepto", "monto"}
+    # Access model_fields on class (not instance) — Pydantic v2.11+ deprecates instance access
+    assert set(GastoSlots.model_fields.keys()) == {"concepto", "monto"}
 
 
 # ---------------------------------------------------------------------------
@@ -117,9 +116,9 @@ def test_draft_gasto_monto_is_optional_decimal():
 
 def test_draft_gasto_no_extra_fields():
     """DraftGasto has no lugar/proveedor/entrada/category per D-01."""
-    draft = DraftGasto()
+    # Access model_fields on class (not instance) — Pydantic v2.11+ deprecates instance access
     allowed = {"concepto", "monto", "ticket_image_path", "failure_count"}
-    assert set(draft.model_fields.keys()) == allowed
+    assert set(DraftGasto.model_fields.keys()) == allowed
 
 
 def test_draft_gasto_failure_count_default_zero():
