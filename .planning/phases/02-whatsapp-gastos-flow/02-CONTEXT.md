@@ -64,7 +64,7 @@ gate, slot extraction).
   discretion; "amount only" is the requirement.
 
 ### Caja-closing (deferred to Phase 3 — captured here so it isn't lost)
-- **D-03:** `hora_cierre` is **auto-derived from server time** (a cutoff selects
+- **D-03 [informational]:** (Phase 3 — not a Phase 2 deliverable.) `hora_cierre` is **auto-derived from server time** (a cutoff selects
   "12:00" vs "17:00"), not asked. The exact cutoff is planner discretion when Phase 3
   builds the caja flow. `fecha` = the day the closing is recorded.
 
