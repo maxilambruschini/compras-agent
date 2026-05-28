@@ -44,26 +44,28 @@
 - [x] 01-04-PLAN.md — ConversationOrchestrator: match-based FSM, lock, idempotency, timeout, re-prompt, confirm gate
 
 ### Phase 2: WhatsApp Gastos Flow
-**Goal**: An allowlisted manager can send a free-form Spanish expense intent on WhatsApp and the bot drives the full multi-turn capture — intent → follow-ups → ticket photo (or "sin ticket") → confirmation → saved gasto record — end-to-end via Twilio; AND the caja closing flow completes from an inbound reply
+**Goal**: An allowlisted manager can send a free-form Spanish expense intent on WhatsApp and the bot drives the full multi-turn capture — intent → ticket photo (amount read by GPT vision) or "sin ticket" (amount asked) → confirmation → saved gasto record — end-to-end via Twilio
 **Depends on**: Phase 1
-**Requirements**: GASTO-03, CAJA-01, CAJA-02
+**Requirements**: GASTO-03
+**Note**: Caja-closing flow (CAJA-01, CAJA-02) moved to Phase 3 — it is initiated by the Phase 3 prompt-trigger, so it is built there alongside its entry point (decision 2026-05-27).
 **Success Criteria** (what must be TRUE):
-  1. Sending "Pago de queso en supermercado $1500" from an allowlisted Twilio number triggers an immediate acknowledgement; the bot asks for missing fields; the gasto is saved in the DB after the manager replies "sí" — verifiable end-to-end on the Twilio sandbox
-  2. Sending a ticket photo at the `awaiting_ticket` step stores the image via LocalStorageBackend and links it to the gasto record; sending "sin ticket" at that step skips storage and the gasto is saved without a ticket path
+  1. Sending "Pago de queso en supermercado" from an allowlisted Twilio number triggers an immediate acknowledgement and the bot asks for a ticket photo; the gasto is saved in the DB after the manager replies "sí" at confirm — verifiable end-to-end on the Twilio sandbox
+  2. Sending a ticket photo at the `awaiting_ticket` step stores the image via LocalStorageBackend, runs GPT-4o vision to extract the amount spent (`monto`), and links the image to the gasto record; replying "sin ticket" skips storage and the bot asks the manager to type the amount instead
   3. Sending from a non-allowlisted number returns a Spanish rejection message and creates no DB record
   4. A replayed webhook (identical Twilio `MessageSid`) does not advance state or create a duplicate record — confirmed against the live Twilio sandbox
   5. The `/gastos/webhook` router returns HTTP 200 before any DB or GPT work begins (Twilio timeout safety) — verified with a timing test or log inspection
-  6. A manager who replies with a cash-on-hand amount in the caja-closing flow has a `CajaCierre` row written with the correct `hora_cierre` (12:00 or 17:00) and `fecha` — verifiable in the DB
+  6. An idle message that is neither a gasto intent nor recognizable returns a fixed Spanish deflection reply and leaves conversation state at idle — confirmed by test
 **Plans**: TBD
 
 ### Phase 3: Prompt Trigger Endpoint
-**Goal**: A caller can POST to a protected endpoint with a manager's phone number and that manager immediately receives the prompt message on WhatsApp — the conversation engine then handles all follow-up replies via the existing Phase 2 webhook router
+**Goal**: A caller can POST to a protected endpoint with a manager's phone number and that manager immediately receives the prompt message on WhatsApp — the conversation engine then handles all follow-up replies via the existing Phase 2 webhook router, including recording the cash-on-hand caja closing
 **Depends on**: Phase 2
-**Requirements**: TRIG-01, TRIG-02
+**Requirements**: TRIG-01, TRIG-02, CAJA-01, CAJA-02
 **Success Criteria** (what must be TRUE):
   1. `POST /gastos/prompt` with a valid bearer token and a manager phone number returns HTTP 200 and the manager receives a WhatsApp message asking for pending payments, cash-on-hand, and "¿hiciste otra compra hoy?" — verifiable in the Twilio sandbox within a live demo session (24h customer-service window is open because the recipient has already messaged the bot)
   2. `POST /gastos/prompt` with a missing or invalid token returns HTTP 401 — no message is sent
   3. After receiving the triggered prompt, the manager can reply conversationally and the existing orchestrator handles the full capture / caja-closing branch without any additional endpoint — confirmed end-to-end in the sandbox
+  4. A manager who replies with a cash-on-hand amount in the caja-closing flow has a `CajaCierre` row written with the correct `hora_cierre` (12:00 or 17:00, auto-derived from server time) and `fecha` — verifiable in the DB
 **Plans**: TBD
 
 ### Phase 4: Admin UI
