@@ -55,7 +55,9 @@
   4. A replayed webhook (identical Twilio `MessageSid`) does not advance state or create a duplicate record — confirmed against the live Twilio sandbox
   5. The `/gastos/webhook` router returns HTTP 200 before any DB or GPT work begins (Twilio timeout safety) — verified with a timing test or log inspection
   6. An idle message that is neither a gasto intent nor recognizable returns a fixed Spanish deflection reply and leaves conversation state at idle — confirmed by test
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 02-01-PLAN.md — FSM rework to ticket-first + amount-only GPT-4o vision extractor + media entry path + off-topic deflection
+- [ ] 02-02-PLAN.md — /gastos/webhook Twilio router (signature → allowlist → fast-200 → background orchestrator with ticket download/store/vision) + AGENT_MODE mount
 
 ### Phase 3: Prompt Trigger Endpoint
 **Goal**: A caller can POST to a protected endpoint with a manager's phone number and that manager immediately receives the prompt message on WhatsApp — the conversation engine then handles all follow-up replies via the existing Phase 2 webhook router, including recording the cash-on-hand caja closing
@@ -87,6 +89,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Data + Conversation Core | 4/4 | Complete   | 2026-05-27 |
-| 2. WhatsApp Gastos Flow | 0/TBD | Not started | - |
+| 2. WhatsApp Gastos Flow | 0/2 | Planned | - |
 | 3. Prompt Trigger Endpoint | 0/TBD | Not started | - |
 | 4. Admin UI | 0/TBD | Not started | - |
