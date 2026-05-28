@@ -4,8 +4,8 @@ milestone: v2.0
 milestone_name: Gastos Bot
 status: executing
 stopped_at: Phase 2 context gathered
-last_updated: "2026-05-28T00:46:57.658Z"
-last_activity: 2026-05-28 -- Phase 02 planning complete
+last_updated: "2026-05-28T01:54:56.120Z"
+last_activity: 2026-05-28 -- Phase 02 execution started
 progress:
   total_phases: 4
   completed_phases: 1
@@ -23,14 +23,14 @@ See: .planning/PROJECT.md (updated 2026-05-27)
 **Core value:** An employee sends a photo of an invoice over WhatsApp and the data lands correctly in the database — no manual entry, no lost receipts.
 **v2.0 goal:** A conversational WhatsApp bot that lets restaurant managers capture cash expenses (gastos) and report twice-daily cash closings — so payments stop getting forgotten.
 **Demo build:** No proactive scheduler — a manual trigger endpoint stands in for the twice-daily prompts.
-**Current focus:** Phase 01 — data-conversation-core
+**Current focus:** Phase 02 — whatsapp-gastos-flow
 
 ## Current Position
 
-Phase: 01 (data-conversation-core) — EXECUTING
-Plan: 4 of 4
-Status: Ready to execute
-Last activity: 2026-05-28 -- Phase 02 planning complete
+Phase: 02 (whatsapp-gastos-flow) — EXECUTING
+Plan: 1 of 2
+Status: Executing Phase 02
+Last activity: 2026-05-28 -- Phase 02 execution started
 
 ```
 Progress: [██████████] 100%
