@@ -99,6 +99,18 @@ AFFIRMATIVE = frozenset({
     "sí", "si", "dale", "ok", "confirmo", "listo", "va", "yes", "bueno", "claro",
 })
 
+# ---------------------------------------------------------------------------
+# Deflection reply (D-04)
+# Returned for off-topic idle messages. State stays IDLE.
+# Argentine Spanish — concise description of what the bot does.
+# ---------------------------------------------------------------------------
+
+DEFLECTION_REPLY: str = (
+    "Hola, soy el asistente de gastos. "
+    "Puedo ayudarte a registrar gastos en efectivo. "
+    "Describí un gasto (ej: 'pagué $1500 de queso en el super') y te guío paso a paso."
+)
+
 
 # ---------------------------------------------------------------------------
 # Pure helpers
@@ -162,6 +174,8 @@ class ConversationOrchestrator:
         sender: str,
         text: str,
         message_id: str,
+        ticket_image_path: Optional[str] = None,
+        ticket_amount: Optional[Decimal] = None,
     ) -> None:
         """Handle one inbound message for a sender.
 
@@ -173,6 +187,10 @@ class ConversationOrchestrator:
             sender: Sender phone number (may include 'whatsapp:' prefix — stripped once).
             text: Inbound message text.
             message_id: Unique message ID from the messaging platform (idempotency key).
+            ticket_image_path: Optional path to a stored ticket image (D-06 media entry).
+                Passed by the router after downloading + storing the media.
+            ticket_amount: Optional Decimal amount extracted by vision from the ticket (D-06).
+                None when vision was unreadable or no media present.
         """
         settings = get_settings()
         log = self._log.bind(sender=sender, message_id=message_id)
@@ -261,7 +279,11 @@ class ConversationOrchestrator:
                         # -----------------------------------------------------------
                         # Step 7: Dispatch to state handler
                         # -----------------------------------------------------------
-                        reply = await self._dispatch(session, conv, text)
+                        reply = await self._dispatch(
+                            session, conv, text,
+                            ticket_image_path=ticket_image_path,
+                            ticket_amount=ticket_amount,
+                        )
 
             # session.begin() commits here (or rolls back on exception)
 
@@ -278,6 +300,8 @@ class ConversationOrchestrator:
         session: AsyncSession,
         conv: Conversation,
         text: str,
+        ticket_image_path: Optional[str] = None,
+        ticket_amount: Optional[Decimal] = None,
     ) -> str:
         """Dispatch to the correct state handler and return the reply string.
 
@@ -302,7 +326,11 @@ class ConversationOrchestrator:
                 reply = await self._handle_awaiting_monto(session, conv, draft, text)
 
             case ConvState.AWAITING_TICKET:
-                reply = self._handle_awaiting_ticket(conv, draft, text)
+                reply = await self._handle_awaiting_ticket(
+                    conv, draft, text,
+                    ticket_image_path=ticket_image_path,
+                    ticket_amount=ticket_amount,
+                )
 
             case ConvState.CONFIRM:
                 reply = await self._handle_confirm(session, conv, draft, text)
@@ -345,50 +373,40 @@ class ConversationOrchestrator:
         draft: DraftGasto,
         text: str,
     ) -> str:
-        """Handle message in idle state.
+        """Handle message in idle state — D-01 ticket-first ordering.
 
-        Extract slots from opening intent. Advance to the first missing slot step
-        in order: concepto → monto → ticket (D-04).
-        If all slots present → go straight to awaiting_ticket.
+        Extract slots from opening intent. Branch on concepto presence:
+        - No slots at all (concepto=None, monto=None) → off-topic deflection, stay IDLE (D-04).
+        - Concepto missing but message looks like a gasto attempt → ask for concepto.
+        - Concepto known (regardless of monto) → ticket-first: advance to AWAITING_TICKET (D-01).
+          Vision will read the amount from the ticket; monto comes from ticket, not this turn.
         """
         slots = await self._slot_service.extract(text)
         draft = patch_draft(draft, slots)
 
+        if slots.concepto is None and slots.monto is None:
+            # Off-topic: no recognizable gasto slots extracted → fixed deflection (D-04)
+            # Do NOT save draft, do NOT advance state
+            return DEFLECTION_REPLY
+
         if draft.concepto is None:
-            # Ask for concepto first
+            # Message had some gasto signal (e.g. monto only) but concepto still missing.
+            # Ask for concepto — reuse AWAITING_MONTO state as concepto-collecting state
+            # (there's no separate awaiting_concepto state per ConvState design).
+            # The reply explicitly asks for concepto, not monto.
             self._save_draft(conv, draft)
-            conv.state = ConvState.AWAITING_MONTO  # Will ask concepto next — actually ask now
-            # Per D-04: concepto → monto → ticket. If concepto absent, ask for it.
-            # Re-read D-04: "Concepto comes from intent; if absent, bot asks before monto."
-            # So if concepto is missing, ask concepto (not monto).
-            # But D-04 also says state sequence is idle→awaiting_monto(only if monto missing).
-            # The plan says: "if concepto missing, set awaiting_monto and ask concepto"
-            # We implement: if concepto missing, stay in awaiting_monto and ask for concepto.
-            # Actually re-read the plan: "concepto → monto → ticket → confirm"
-            # The state machine doesn't have an "awaiting_concepto" state.
-            # The plan says: "idle: ... if concepto missing, ask concepto;
-            # elif monto missing, set awaiting_monto and ask monto;
-            # else set awaiting_ticket and ask for ticket."
-            # But only awaiting_monto/awaiting_ticket states exist.
-            # If concepto is missing, we can ask in the reply while setting state to
-            # awaiting_monto (where we'll also re-extract on next message).
             conv.state = ConvState.AWAITING_MONTO
-            self._save_draft(conv, draft)
             return "¿Cuál fue el concepto del gasto? (ej: queso en supermercado)"
 
-        elif draft.monto is None:
-            # Concepto known, monto missing → awaiting_monto
-            conv.state = ConvState.AWAITING_MONTO
-            self._save_draft(conv, draft)
-            return f"Entendido, *{draft.concepto}*. ¿Cuánto fue el monto?"
-
         else:
-            # Both concepto and monto present → skip awaiting_monto (D-03)
+            # Concepto is known — D-01 ticket-first: go to AWAITING_TICKET
+            # Ask for ticket photo (or 'sin ticket') regardless of whether monto was stated.
+            # Vision re-reads amount from ticket; confirm summary shows the resolved amount (D-01a).
             conv.state = ConvState.AWAITING_TICKET
             self._save_draft(conv, draft)
             return (
-                f"*{draft.concepto}* por ${draft.monto}. "
-                "¿Tenés foto del ticket? Si no, respondé *sin ticket*."
+                f"Entendido, *{draft.concepto}*. "
+                "¿Tenés foto del ticket de pago? Enviá la foto o respondé *sin ticket*."
             )
 
     async def _handle_awaiting_monto(
@@ -403,6 +421,10 @@ class ConversationOrchestrator:
         Try to extract monto via SlotExtractionService, then fall back to parse_ars_amount.
         On success: reset failure_count, advance to awaiting_ticket.
         On failure: increment failure_count; on >=3, include example + cancel offer.
+
+        Note: AWAITING_MONTO is also used as a concepto-collecting state when concepto
+        is missing (reusing the same state for simplicity, per plan). When concepto
+        is still missing, a correct monto reply will also extract concepto from context.
         """
         # Try GPT extraction first
         slots = await self._slot_service.extract(text)
@@ -443,30 +465,59 @@ class ConversationOrchestrator:
             else:
                 return "No pude entender el monto. ¿Cuánto fue? (ej: 1500)"
 
-    def _handle_awaiting_ticket(
+    async def _handle_awaiting_ticket(
         self,
         conv: Conversation,
         draft: DraftGasto,
         text: str,
+        ticket_image_path: Optional[str] = None,
+        ticket_amount: Optional[Decimal] = None,
     ) -> str:
-        """Handle message in awaiting_ticket state.
+        """Handle message in awaiting_ticket state — D-01/D-02/D-06 core logic.
 
-        'sin ticket' (case-insensitive) → ticket_image_path stays None, advance to confirm.
-        Photo capture is Phase 2 — Phase 1 only accepts the 'sin ticket' text path.
+        Branches:
+        (a) text == "sin ticket" (case-insensitive) → ticket_image_path stays None,
+            state → AWAITING_MONTO, ask manager to type the amount (D-01, GASTO-04).
+        (b) ticket_image_path is not None AND ticket_amount is not None → vision read ok:
+            set draft.monto = ticket_amount, draft.ticket_image_path = path,
+            state → CONFIRM, reply is confirm summary showing resolved amount (D-01a, D-02).
+        (c) ticket_image_path is not None AND ticket_amount is None → vision unreadable (D-01b):
+            still store ticket_image_path on draft, state → AWAITING_MONTO,
+            ask manager to type the amount (falls into the re-prompt path).
+        (d) plain text that is neither "sin ticket" nor an accompanying photo →
+            re-prompt asking for a photo or 'sin ticket'.
         """
+        # Branch (a): 'sin ticket' — manager explicitly skips the ticket
         if text.strip().lower() == "sin ticket":
             draft.ticket_image_path = None
+            conv.state = ConvState.AWAITING_MONTO
+            self._save_draft(conv, draft)
+            return "Entendido, sin ticket. ¿Cuánto fue el monto? (ej: 1500)"
+
+        # Branch (b): photo received + vision extracted amount successfully
+        if ticket_image_path is not None and ticket_amount is not None:
+            draft.ticket_image_path = ticket_image_path
+            draft.monto = ticket_amount
             conv.state = ConvState.CONFIRM
             self._save_draft(conv, draft)
             return self._confirm_summary(draft)
-        else:
-            # Phase 2 handles actual photo. For now, prompt again or accept text
-            # as "sin ticket" equivalent if it doesn't look like a ticket.
-            # Per plan: Phase 1 only accepts "sin ticket" text.
-            draft.ticket_image_path = None
-            conv.state = ConvState.CONFIRM
+
+        # Branch (c): photo received but vision could not read amount (D-01b)
+        if ticket_image_path is not None and ticket_amount is None:
+            draft.ticket_image_path = ticket_image_path  # always store when provided (D-02)
+            conv.state = ConvState.AWAITING_MONTO
             self._save_draft(conv, draft)
-            return self._confirm_summary(draft)
+            return (
+                "Guardé la foto del ticket pero no pude leer el monto. "
+                "¿Cuánto fue? (ej: 1500)"
+            )
+
+        # Branch (d): plain text, not 'sin ticket', no accompanying photo
+        # Re-prompt for a photo or 'sin ticket'
+        return (
+            "Enviá la foto del ticket de pago o respondé *sin ticket* "
+            "si no tenés comprobante."
+        )
 
     async def _handle_confirm(
         self,

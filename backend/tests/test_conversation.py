@@ -576,8 +576,12 @@ async def test_cancelar_from_confirm(db_session: AsyncSession) -> None:
 
 
 @pytest.mark.asyncio
-async def test_full_flow_awaiting_monto(db_session: AsyncSession) -> None:
-    """From idle, concepto-only intent → state becomes awaiting_monto (GASTO-02, D-03/D-04)."""
+async def test_full_flow_concepto_only_advances_to_awaiting_ticket(db_session: AsyncSession) -> None:
+    """From idle, concepto-only intent → state becomes awaiting_ticket (D-01 ticket-first).
+
+    Phase 2 change: concepto-only idle no longer goes to awaiting_monto.
+    It goes directly to awaiting_ticket because the ticket photo is the amount source (D-01).
+    """
     slot_service = AsyncMock()
     # Opening intent: concepto only, no monto
     slot_service.extract = AsyncMock(return_value=GastoSlots(concepto="queso", monto=None))
@@ -596,16 +600,18 @@ async def test_full_flow_awaiting_monto(db_session: AsyncSession) -> None:
         select(Conversation).where(Conversation.sender_phone == NORM_SENDER)
     )
     conv = result.scalar_one()
-    assert conv.state == "awaiting_monto", (
-        f"Concepto-only intent must advance to awaiting_monto, got '{conv.state}'"
+    assert conv.state == "awaiting_ticket", (
+        f"Concepto-only intent must advance to awaiting_ticket (D-01 ticket-first), got '{conv.state}'"
     )
     # draft has concepto set
     draft = DraftGasto.model_validate_json(conv.draft_gasto)
     assert draft.concepto == "queso"
     assert draft.monto is None
 
-    # Reply asks for monto
+    # Reply asks for ticket photo / 'sin ticket'
     provider.send_message.assert_called_once()
+    reply = provider.send_message.call_args[0][1]
+    assert "ticket" in reply.lower(), f"Reply should ask for ticket, got: '{reply}'"
 
 
 @pytest.mark.asyncio
@@ -638,7 +644,10 @@ async def test_full_flow_both_slots_skip_awaiting_monto(db_session: AsyncSession
 
 @pytest.mark.asyncio
 async def test_state_persists(db_session: AsyncSession) -> None:
-    """After awaiting_monto transition, the Conversation row reloaded from DB reflects new state (CONV-01)."""
+    """After idle transition with concepto, the Conversation row persists awaiting_ticket (D-01, CONV-01).
+
+    Phase 2 change: concepto-known idle goes to awaiting_ticket (ticket-first), not awaiting_monto.
+    """
     slot_service = AsyncMock()
     slot_service.extract = AsyncMock(return_value=GastoSlots(concepto="verdura", monto=None))
     provider = AsyncMock()
@@ -657,15 +666,22 @@ async def test_state_persists(db_session: AsyncSession) -> None:
         select(Conversation).where(Conversation.sender_phone == NORM_SENDER)
     )
     conv = result.scalar_one()
-    assert conv.state == "awaiting_monto"
+    assert conv.state == "awaiting_ticket", (
+        f"Concepto-known idle must persist as awaiting_ticket (D-01), got '{conv.state}'"
+    )
     draft = DraftGasto.model_validate_json(conv.draft_gasto)
     assert draft.concepto == "verdura"
 
 
 @pytest.mark.asyncio
-async def test_sin_ticket(db_session: AsyncSession) -> None:
-    """At awaiting_ticket, 'sin ticket' advances to confirm with ticket_image_path None (GASTO-04)."""
-    draft = DraftGasto(concepto="queso", monto=Decimal("1500"))
+async def test_sin_ticket_advances_to_awaiting_monto(db_session: AsyncSession) -> None:
+    """At awaiting_ticket, 'sin ticket' → ticket_image_path stays None, state → AWAITING_MONTO (D-01, GASTO-04).
+
+    Phase 2 change: 'sin ticket' no longer goes directly to confirm.
+    The bot now asks the manager to TYPE the amount (ticket is the amount source; without
+    ticket, manager must provide amount manually via awaiting_monto).
+    """
+    draft = DraftGasto(concepto="queso")  # monto not yet set (ticket-first flow)
     conv = Conversation(
         sender_phone=NORM_SENDER,
         state="awaiting_ticket",
@@ -687,14 +703,16 @@ async def test_sin_ticket(db_session: AsyncSession) -> None:
     )
 
     await db_session.refresh(conv)
-    assert conv.state == "confirm", f"'sin ticket' must advance to confirm, got '{conv.state}'"
+    assert conv.state == "awaiting_monto", (
+        f"'sin ticket' must advance to awaiting_monto (D-01), got '{conv.state}'"
+    )
     refreshed_draft = DraftGasto.model_validate_json(conv.draft_gasto)
     assert refreshed_draft.ticket_image_path is None
 
-    # Reply shows summary with confirmation prompt
+    # Reply asks manager to type the amount
     provider.send_message.assert_called_once()
-    summary_text = provider.send_message.call_args[0][1]
-    assert len(summary_text) > 0
+    reply_text = provider.send_message.call_args[0][1]
+    assert len(reply_text) > 0
 
 
 @pytest.mark.asyncio
@@ -953,4 +971,227 @@ async def test_reply_sent_after_commit(db_session: AsyncSession) -> None:
     assert state_at_send.get("last_message_id") == "msg-order-test", (
         "last_message_id should already be committed when send_message is called "
         "(reply sent AFTER commit, Pitfall C)"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Phase 2 Task 2 — D-01 Ticket-first reorder tests
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_idle_concepto_known_advances_to_awaiting_ticket(db_session: AsyncSession) -> None:
+    """Idle message with concepto known → state advances to AWAITING_TICKET (D-01, ticket-first).
+
+    This is the core D-01 reorder: concepto-known idle now goes to AWAITING_TICKET
+    (not AWAITING_MONTO as in Phase 1). The bot asks for a ticket photo or 'sin ticket'.
+    """
+    slot_service = AsyncMock()
+    slot_service.extract = AsyncMock(return_value=GastoSlots(concepto="queso", monto=None))
+    provider = AsyncMock()
+    orch = await _make_orchestrator(slot_service=slot_service, provider=provider)
+    session_factory = _make_session_factory(db_session)
+
+    await orch.handle_message(
+        session_factory=session_factory,
+        sender=NORM_SENDER,
+        text="pagué queso en el super",
+        message_id="msg-ticket-first",
+    )
+
+    result = await db_session.execute(
+        select(Conversation).where(Conversation.sender_phone == NORM_SENDER)
+    )
+    conv = result.scalar_one()
+    assert conv.state == "awaiting_ticket", (
+        f"Concepto-known idle must advance to awaiting_ticket (D-01 ticket-first), got '{conv.state}'"
+    )
+
+    # Reply must ask for ticket photo / 'sin ticket' — NOT for monto
+    provider.send_message.assert_called_once()
+    reply = provider.send_message.call_args[0][1]
+    assert "ticket" in reply.lower(), (
+        f"Reply must mention 'ticket', got: '{reply}'"
+    )
+
+
+@pytest.mark.asyncio
+async def test_idle_off_topic_deflection_stays_idle(db_session: AsyncSession) -> None:
+    """Off-topic idle message → fixed Spanish deflection reply, state stays IDLE (D-04).
+
+    No draft saved, no state advance. The bot explains what it does in Spanish.
+    """
+    slot_service = AsyncMock()
+    # Returns no slots — off-topic message
+    slot_service.extract = AsyncMock(return_value=GastoSlots(concepto=None, monto=None))
+    provider = AsyncMock()
+    orch = await _make_orchestrator(slot_service=slot_service, provider=provider)
+    session_factory = _make_session_factory(db_session)
+
+    await orch.handle_message(
+        session_factory=session_factory,
+        sender=NORM_SENDER,
+        text="cómo está el clima hoy?",
+        message_id="msg-offtopic",
+    )
+
+    result = await db_session.execute(
+        select(Conversation).where(Conversation.sender_phone == NORM_SENDER)
+    )
+    conv = result.scalar_one()
+    assert conv.state == "idle", (
+        f"Off-topic idle message must leave state at idle (D-04), got '{conv.state}'"
+    )
+
+    # Reply is the deflection — not None
+    provider.send_message.assert_called_once()
+    reply = provider.send_message.call_args[0][1]
+    assert len(reply) > 0, "Deflection reply must not be empty"
+
+    # Draft must NOT be saved for off-topic
+    assert conv.draft_gasto is None, (
+        "Draft must NOT be saved for off-topic idle message (D-04)"
+    )
+
+
+@pytest.mark.asyncio
+async def test_awaiting_ticket_sin_ticket_advances_to_awaiting_monto(db_session: AsyncSession) -> None:
+    """At AWAITING_TICKET, 'sin ticket' → ticket_image_path stays None, state → AWAITING_MONTO (D-01, GASTO-04).
+
+    The manager must type the amount manually (not in this test, but the state
+    correctly routes to awaiting_monto where the 3-strikes re-prompt logic lives).
+    """
+    draft = DraftGasto(concepto="queso")  # monto not set yet (ticket-first flow)
+    conv = Conversation(
+        sender_phone=NORM_SENDER,
+        state="awaiting_ticket",
+        draft_gasto=draft.model_dump_json(),
+        last_message_id="msg-prev",
+    )
+    db_session.add(conv)
+    await db_session.commit()
+
+    provider = AsyncMock()
+    orch = await _make_orchestrator(provider=provider)
+    session_factory = _make_session_factory(db_session)
+
+    await orch.handle_message(
+        session_factory=session_factory,
+        sender=NORM_SENDER,
+        text="sin ticket",
+        message_id="msg-sin-ticket-d01",
+    )
+
+    await db_session.refresh(conv)
+    assert conv.state == "awaiting_monto", (
+        f"'sin ticket' at AWAITING_TICKET must advance to awaiting_monto (D-01), got '{conv.state}'"
+    )
+    refreshed_draft = DraftGasto.model_validate_json(conv.draft_gasto)
+    assert refreshed_draft.ticket_image_path is None, (
+        "ticket_image_path must be None after 'sin ticket'"
+    )
+
+    # Reply must ask manager to type the amount
+    provider.send_message.assert_called_once()
+    reply = provider.send_message.call_args[0][1]
+    assert len(reply) > 0, "Reply must not be empty after 'sin ticket'"
+
+
+@pytest.mark.asyncio
+async def test_awaiting_ticket_with_media_path_and_amount_advances_to_confirm(db_session: AsyncSession) -> None:
+    """handle_message with ticket_image_path + ticket_amount while AWAITING_TICKET → CONFIRM (D-01a, D-02).
+
+    The router passes the stored path and vision-extracted Decimal amount.
+    draft.monto = ticket_amount, draft.ticket_image_path = path, state → CONFIRM.
+    Reply is the confirm summary showing the resolved amount.
+    """
+    draft = DraftGasto(concepto="queso")
+    conv = Conversation(
+        sender_phone=NORM_SENDER,
+        state="awaiting_ticket",
+        draft_gasto=draft.model_dump_json(),
+        last_message_id="msg-prev",
+    )
+    db_session.add(conv)
+    await db_session.commit()
+
+    provider = AsyncMock()
+    orch = await _make_orchestrator(provider=provider)
+    session_factory = _make_session_factory(db_session)
+
+    ticket_path = "tickets/msg-photo/ticket.jpg"
+    ticket_amount = Decimal("1500")
+
+    await orch.handle_message(
+        session_factory=session_factory,
+        sender=NORM_SENDER,
+        text="",  # empty text when media is present
+        message_id="msg-photo",
+        ticket_image_path=ticket_path,
+        ticket_amount=ticket_amount,
+    )
+
+    await db_session.refresh(conv)
+    assert conv.state == "confirm", (
+        f"Media path + amount must advance to confirm (D-01a), got '{conv.state}'"
+    )
+    refreshed_draft = DraftGasto.model_validate_json(conv.draft_gasto)
+    assert refreshed_draft.ticket_image_path == ticket_path, (
+        f"ticket_image_path must be stored on draft, got {refreshed_draft.ticket_image_path!r}"
+    )
+    assert refreshed_draft.monto == ticket_amount, (
+        f"draft.monto must be set to ticket_amount ({ticket_amount}), got {refreshed_draft.monto!r}"
+    )
+
+    # Reply is the confirm summary showing the resolved amount
+    provider.send_message.assert_called_once()
+    reply = provider.send_message.call_args[0][1]
+    assert "1500" in reply, (
+        f"Confirm summary must show the resolved amount '1500', got: '{reply}'"
+    )
+
+
+@pytest.mark.asyncio
+async def test_awaiting_ticket_with_media_path_vision_unreadable_advances_to_awaiting_monto(
+    db_session: AsyncSession,
+) -> None:
+    """handle_message with ticket_image_path but ticket_amount=None (vision unreadable) → AWAITING_MONTO (D-01b).
+
+    Image path is still stored on draft. Falls back to asking manager to type the amount.
+    """
+    draft = DraftGasto(concepto="queso")
+    conv = Conversation(
+        sender_phone=NORM_SENDER,
+        state="awaiting_ticket",
+        draft_gasto=draft.model_dump_json(),
+        last_message_id="msg-prev",
+    )
+    db_session.add(conv)
+    await db_session.commit()
+
+    provider = AsyncMock()
+    orch = await _make_orchestrator(provider=provider)
+    session_factory = _make_session_factory(db_session)
+
+    ticket_path = "tickets/msg-unreadable/ticket.jpg"
+
+    await orch.handle_message(
+        session_factory=session_factory,
+        sender=NORM_SENDER,
+        text="",
+        message_id="msg-unreadable",
+        ticket_image_path=ticket_path,
+        ticket_amount=None,  # vision unreadable
+    )
+
+    await db_session.refresh(conv)
+    assert conv.state == "awaiting_monto", (
+        f"Unreadable vision must fall back to awaiting_monto (D-01b), got '{conv.state}'"
+    )
+    refreshed_draft = DraftGasto.model_validate_json(conv.draft_gasto)
+    assert refreshed_draft.ticket_image_path == ticket_path, (
+        "ticket_image_path must still be stored on draft even when vision unreadable"
+    )
+    assert refreshed_draft.monto is None, (
+        "monto must NOT be set when vision is unreadable"
     )
