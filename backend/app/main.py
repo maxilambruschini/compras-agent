@@ -59,9 +59,11 @@ def create_app() -> FastAPI:
         from app.routers.whatsapp import router as whatsapp_router
 
         app.include_router(whatsapp_router, prefix="/whatsapp", tags=["whatsapp"])
-    # elif settings.agent_mode == "gastos":
-    #     Gastos Bot webhook wired in Phase 2 — router does not exist yet.
-    #     No router registered here for gastos mode (D-09 demo isolation seam).
+    elif settings.agent_mode == "gastos":
+        # v2.0 Gastos Bot — conversational expense capture via WhatsApp (D-09)
+        from app.routers.gastos import router as gastos_router
+
+        app.include_router(gastos_router, prefix="/gastos", tags=["gastos"])
 
     return app
 
