@@ -166,28 +166,43 @@ async def test_non_allowlisted_sender(webhook_client, db_session):
 @pytest.mark.asyncio
 async def test_allowlisted_text_only_dispatches_task(webhook_client, db_session):
     """Allowlisted sender, text-only (NumMedia=0) → 200 + background task scheduled (success criteria 1 + 5)."""
-    client, mock_provider, app = webhook_client
+    import app.routers.gastos as gastos_module
+
+    client, mock_provider, app_inst = webhook_client
     db_session.add(SenderAllowlist(phone_number="+5491112345678"))
     await db_session.commit()
 
-    response = await client.post(
-        "/gastos/webhook",
-        data=make_twilio_form(From="whatsapp:+5491112345678", NumMedia="0"),
-        headers={"X-Twilio-Signature": "valid-sig"},
-    )
+    mock_orchestrator = MagicMock()
+    mock_orchestrator.handle_message = AsyncMock()
 
-    # 200 returned immediately (success criterion 5 — before DB/GPT work)
-    assert response.status_code == 200
-    # Background task was scheduled (orchestrator dispatched)
-    assert len(_background_tasks) == 1
+    with patch.object(gastos_module, "get_async_session_local", return_value=_make_session_local_mock(db_session)):
+        with patch("app.routers.gastos.ConversationOrchestrator", return_value=mock_orchestrator):
+            response = await client.post(
+                "/gastos/webhook",
+                data=make_twilio_form(From="whatsapp:+5491112345678", NumMedia="0"),
+                headers={"X-Twilio-Signature": "valid-sig"},
+            )
+            # 200 returned immediately (success criterion 5 — before DB/GPT work)
+            assert response.status_code == 200
+            # Background task was scheduled (asyncio.create_task, not awaited)
+            assert len(_background_tasks) == 1
+            # Wait for task to complete
+            await asyncio.sleep(0.2)
+
+    mock_orchestrator.handle_message.assert_awaited_once()
 
 
 @pytest.mark.asyncio
 async def test_duplicate_message_sid_no_second_task(webhook_client, db_session):
     """Duplicate MessageSid → second POST returns 200 but no second task scheduled (success criterion 4)."""
-    client, mock_provider, app = webhook_client
+    import app.routers.gastos as gastos_module
+
+    client, mock_provider, app_inst = webhook_client
     db_session.add(SenderAllowlist(phone_number="+5491112345678"))
     await db_session.commit()
+
+    mock_orchestrator = MagicMock()
+    mock_orchestrator.handle_message = AsyncMock()
 
     form = make_twilio_form(
         From="whatsapp:+5491112345678",
@@ -195,24 +210,26 @@ async def test_duplicate_message_sid_no_second_task(webhook_client, db_session):
         NumMedia="0",
     )
 
-    response1 = await client.post(
-        "/gastos/webhook",
-        data=form,
-        headers={"X-Twilio-Signature": "valid-sig"},
-    )
-    response2 = await client.post(
-        "/gastos/webhook",
-        data=form,
-        headers={"X-Twilio-Signature": "valid-sig"},
-    )
+    with patch.object(gastos_module, "get_async_session_local", return_value=_make_session_local_mock(db_session)):
+        with patch("app.routers.gastos.ConversationOrchestrator", return_value=mock_orchestrator):
+            response1 = await client.post(
+                "/gastos/webhook",
+                data=form,
+                headers={"X-Twilio-Signature": "valid-sig"},
+            )
+            response2 = await client.post(
+                "/gastos/webhook",
+                data=form,
+                headers={"X-Twilio-Signature": "valid-sig"},
+            )
+            await asyncio.sleep(0.2)
 
     assert response1.status_code == 200
     assert response2.status_code == 200
-    # Only one task was ever scheduled (second POST was short-circuited)
+    # Only one task was ever scheduled (second POST was short-circuited by _processed_message_sids)
     assert "SM-dedupe-gastos-001" in _processed_message_sids
-    # Tasks may have completed by now, but the second POST must not add another
-    # At most 1 task total was scheduled
-    # (We check _processed_message_sids has the ID, and only one non-allowlist send happened)
+    # Orchestrator was called exactly once (from first POST only)
+    mock_orchestrator.handle_message.assert_awaited_once()
     # The non-allowlisted reply should NOT have been sent (sender IS allowlisted)
     texts = [c.kwargs.get("text", "") for c in mock_provider.send_message.call_args_list]
     assert NON_ALLOWLISTED_REPLY not in texts
@@ -225,20 +242,29 @@ async def test_response_returns_before_background_work(webhook_client, db_sessio
     Verified by: the handler uses asyncio.create_task (not await) so the response
     returns with _background_tasks having exactly 1 pending task immediately after.
     """
-    client, mock_provider, app = webhook_client
+    import app.routers.gastos as gastos_module
+
+    client, mock_provider, app_inst = webhook_client
     db_session.add(SenderAllowlist(phone_number="+5491112345678"))
     await db_session.commit()
 
-    response = await client.post(
-        "/gastos/webhook",
-        data=make_twilio_form(From="whatsapp:+5491112345678", NumMedia="0"),
-        headers={"X-Twilio-Signature": "valid-sig"},
-    )
+    mock_orchestrator = MagicMock()
+    mock_orchestrator.handle_message = AsyncMock()
 
-    assert response.status_code == 200
-    # The background task was scheduled (asyncio.create_task, not awaited inline)
-    # This proves fast-200: the response returned with the task still in the set
-    assert "SM-" not in str(response.content)  # no task output leaked into response body
+    with patch.object(gastos_module, "get_async_session_local", return_value=_make_session_local_mock(db_session)):
+        with patch("app.routers.gastos.ConversationOrchestrator", return_value=mock_orchestrator):
+            response = await client.post(
+                "/gastos/webhook",
+                data=make_twilio_form(From="whatsapp:+5491112345678", NumMedia="0"),
+                headers={"X-Twilio-Signature": "valid-sig"},
+            )
+
+            assert response.status_code == 200
+            # The background task was scheduled (asyncio.create_task, not awaited inline)
+            # This proves fast-200: the response returned with the task still in the set
+            assert len(_background_tasks) == 1
+            assert response.content == b""  # no task output leaked into response body
+            await asyncio.sleep(0.1)
 
 
 # ---------------------------------------------------------------------------
