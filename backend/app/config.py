@@ -14,9 +14,11 @@ class Settings(BaseSettings):
     # Required — no default — app refuses to start if missing (INF-03)
     database_url: str  # postgresql+asyncpg://user:pass@host:5432/db
     openai_api_key: str
-    whatsapp_token: str
-    whatsapp_phone_number_id: str
-    whatsapp_verify_token: str
+
+    # Meta WhatsApp Cloud API credentials (required when whatsapp_provider="meta"; empty default allows Twilio path)
+    whatsapp_token: str = ""
+    whatsapp_phone_number_id: str = ""
+    whatsapp_verify_token: str = ""
 
     # Optional with defaults
     debug: bool = False
