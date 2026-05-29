@@ -126,10 +126,11 @@ def get_whatsapp_provider(settings: Settings = Depends(get_settings)) -> WhatsAp
 def _compute_effective_url(request: Request, settings: Settings) -> str:
     """Return the URL used for Twilio signature validation.
 
-    Clone of whatsapp.py:166-183 with path changed to /gastos/webhook.
+    Clone of whatsapp.py:166-183 — both agents share the canonical /webhook path
+    so a single Twilio config works across AGENT_MODE.
     """
     if settings.webhook_base_url:
-        return f"{settings.webhook_base_url.rstrip('/')}/gastos/webhook"
+        return f"{settings.webhook_base_url.rstrip('/')}/webhook"
     return str(request.url)
 
 

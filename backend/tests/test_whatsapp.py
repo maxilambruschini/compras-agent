@@ -148,7 +148,7 @@ async def test_invalid_signature(webhook_client):
     mock_provider.validate_signature.return_value = False
 
     response = await client.post(
-        "/whatsapp/webhook",
+        "/webhook",
         data=make_twilio_form(),
         headers={"X-Twilio-Signature": "invalid-sig"},
     )
@@ -168,7 +168,7 @@ async def test_valid_signature_allowlisted_sends_ack(webhook_client, db_session)
     await db_session.commit()
 
     response = await client.post(
-        "/whatsapp/webhook",
+        "/webhook",
         data=make_twilio_form(From="whatsapp:+5491112345678"),
         headers={"X-Twilio-Signature": "valid-sig"},
     )
@@ -187,7 +187,7 @@ async def test_non_allowlisted(webhook_client, db_session):
     # Do NOT seed allowlist row for this sender
 
     response = await client.post(
-        "/whatsapp/webhook",
+        "/webhook",
         data=make_twilio_form(From="whatsapp:+5499999999999"),
         headers={"X-Twilio-Signature": "valid-sig"},
     )
@@ -214,7 +214,7 @@ async def test_no_media(webhook_client, db_session):
     await db_session.commit()
 
     response = await client.post(
-        "/whatsapp/webhook",
+        "/webhook",
         data=make_twilio_form(From="whatsapp:+5491112345678", NumMedia="0"),
         headers={"X-Twilio-Signature": "valid-sig"},
     )
@@ -236,7 +236,7 @@ async def test_background_task_scheduled(webhook_client, db_session):
     await db_session.commit()
 
     response = await client.post(
-        "/whatsapp/webhook",
+        "/webhook",
         data=make_twilio_form(From="whatsapp:+5491112345678", NumMedia="1"),
         headers={"X-Twilio-Signature": "valid-sig"},
     )
@@ -259,7 +259,7 @@ async def test_webhook_url_passed_to_validator(webhook_client, db_session):
     await db_session.commit()
 
     response = await client.post(
-        "/whatsapp/webhook",
+        "/webhook",
         data=make_twilio_form(From="whatsapp:+5491112345678"),
         headers={"X-Twilio-Signature": "valid-sig"},
     )
@@ -268,7 +268,7 @@ async def test_webhook_url_passed_to_validator(webhook_client, db_session):
     call_args = mock_provider.validate_signature.call_args
     effective_url = call_args.args[0]
     # When webhook_base_url is None, the effective URL is str(request.url)
-    assert effective_url == "http://testserver/whatsapp/webhook"
+    assert effective_url == "http://testserver/webhook"
 
 
 @pytest.mark.asyncio
@@ -298,7 +298,7 @@ async def test_webhook_base_url_overrides_request_url(db_session, monkeypatch):
         transport=httpx.ASGITransport(app=app), base_url="http://testserver"
     ) as client:
         response = await client.post(
-            "/whatsapp/webhook",
+            "/webhook",
             data=make_twilio_form(From="whatsapp:+5491112345678"),
             headers={"X-Twilio-Signature": "valid-sig"},
         )
@@ -309,7 +309,7 @@ async def test_webhook_base_url_overrides_request_url(db_session, monkeypatch):
     assert response.status_code == 200
     call_args = mock_provider.validate_signature.call_args
     effective_url = call_args.args[0]
-    assert effective_url == "https://abcd.ngrok-free.app/whatsapp/webhook"
+    assert effective_url == "https://abcd.ngrok-free.app/webhook"
 
 
 @pytest.mark.asyncio
@@ -329,13 +329,13 @@ async def test_duplicate_message_sid(webhook_client, db_session):
 
     # First POST
     response1 = await client.post(
-        "/whatsapp/webhook",
+        "/webhook",
         data=form,
         headers={"X-Twilio-Signature": "valid-sig"},
     )
     # Second POST with same MessageSid
     response2 = await client.post(
-        "/whatsapp/webhook",
+        "/webhook",
         data=form,
         headers={"X-Twilio-Signature": "valid-sig"},
     )
@@ -511,7 +511,7 @@ async def test_unsupported_media_type(process_invoice_client):
     with patch.object(wa_module, "ExtractionService", return_value=mock_extraction_svc):
         with patch.object(wa_module, "get_async_session_local", return_value=session_local_mock):
             response = await client.post(
-                "/whatsapp/webhook",
+                "/webhook",
                 data=make_twilio_form(
                     From="whatsapp:+5491112345678",
                     MediaContentType0="application/pdf",
@@ -554,7 +554,7 @@ async def test_invalid_magic_bytes(process_invoice_client):
         with patch.object(wa_module, "get_async_session_local", return_value=session_local_mock):
             with structlog.testing.capture_logs() as log_entries:
                 response = await client.post(
-                    "/whatsapp/webhook",
+                    "/webhook",
                     data=make_twilio_form(From="whatsapp:+5491112345678"),
                     headers={"X-Twilio-Signature": "valid-sig"},
                 )
@@ -592,7 +592,7 @@ async def test_valid_jpeg_magic_bytes_passes(process_invoice_client):
         with patch.object(wa_module, "InvoiceService", return_value=mock_invoice_svc):
             with patch.object(wa_module, "get_async_session_local", return_value=session_local_mock):
                 response = await client.post(
-                    "/whatsapp/webhook",
+                    "/webhook",
                     data=make_twilio_form(From="whatsapp:+5491112345678"),
                     headers={"X-Twilio-Signature": "valid-sig"},
                 )
@@ -623,7 +623,7 @@ async def test_valid_png_magic_bytes_passes(process_invoice_client):
         with patch.object(wa_module, "InvoiceService", return_value=mock_invoice_svc):
             with patch.object(wa_module, "get_async_session_local", return_value=session_local_mock):
                 response = await client.post(
-                    "/whatsapp/webhook",
+                    "/webhook",
                     data=make_twilio_form(From="whatsapp:+5491112345678"),
                     headers={"X-Twilio-Signature": "valid-sig"},
                 )
@@ -679,7 +679,7 @@ async def test_auto_saved_reply(process_invoice_client):
         with patch.object(wa_module, "InvoiceService", return_value=mock_invoice_svc):
             with patch.object(wa_module, "get_async_session_local", return_value=session_local_mock):
                 response = await client.post(
-                    "/whatsapp/webhook",
+                    "/webhook",
                     data=make_twilio_form(From="whatsapp:+5491112345678"),
                     headers={"X-Twilio-Signature": "valid-sig"},
                 )
@@ -719,7 +719,7 @@ async def test_pending_review_reply(process_invoice_client):
         with patch.object(wa_module, "InvoiceService", return_value=mock_invoice_svc):
             with patch.object(wa_module, "get_async_session_local", return_value=session_local_mock):
                 response = await client.post(
-                    "/whatsapp/webhook",
+                    "/webhook",
                     data=make_twilio_form(From="whatsapp:+5491112345678"),
                     headers={"X-Twilio-Signature": "valid-sig"},
                 )
@@ -753,7 +753,7 @@ async def test_summary_format(process_invoice_client):
         with patch.object(wa_module, "InvoiceService", return_value=mock_invoice_svc):
             with patch.object(wa_module, "get_async_session_local", return_value=session_local_mock):
                 response = await client.post(
-                    "/whatsapp/webhook",
+                    "/webhook",
                     data=make_twilio_form(From="whatsapp:+5491112345678"),
                     headers={"X-Twilio-Signature": "valid-sig"},
                 )
@@ -801,7 +801,7 @@ async def test_summary_omits_missing_fields(process_invoice_client):
         with patch.object(wa_module, "InvoiceService", return_value=mock_invoice_svc):
             with patch.object(wa_module, "get_async_session_local", return_value=session_local_mock):
                 response = await client.post(
-                    "/whatsapp/webhook",
+                    "/webhook",
                     data=make_twilio_form(From="whatsapp:+5491112345678"),
                     headers={"X-Twilio-Signature": "valid-sig"},
                 )
@@ -847,7 +847,7 @@ async def test_duplicate_app_level(process_invoice_client):
         with patch.object(wa_module, "InvoiceService", return_value=mock_invoice_svc):
             with patch.object(wa_module, "get_async_session_local", return_value=session_local_mock):
                 response = await client.post(
-                    "/whatsapp/webhook",
+                    "/webhook",
                     data=make_twilio_form(From="whatsapp:+5491112345678"),
                     headers={"X-Twilio-Signature": "valid-sig"},
                 )
@@ -898,7 +898,7 @@ async def test_duplicate_race_integrity_error(process_invoice_client):
         with patch.object(wa_module, "InvoiceService", return_value=mock_invoice_svc):
             with patch.object(wa_module, "get_async_session_local", return_value=session_local_mock):
                 response = await client.post(
-                    "/whatsapp/webhook",
+                    "/webhook",
                     data=make_twilio_form(From="whatsapp:+5491112345678"),
                     headers={"X-Twilio-Signature": "valid-sig"},
                 )
@@ -940,7 +940,7 @@ async def test_duplicate_race_integrity_error_no_existing_row(process_invoice_cl
             with patch.object(wa_module, "get_async_session_local", return_value=session_local_mock):
                 with structlog.testing.capture_logs() as log_entries:
                     response = await client.post(
-                        "/whatsapp/webhook",
+                        "/webhook",
                         data=make_twilio_form(From="whatsapp:+5491112345678"),
                         headers={"X-Twilio-Signature": "valid-sig"},
                     )
@@ -976,7 +976,7 @@ async def test_extraction_refusal_sends_error(process_invoice_client):
     with patch.object(wa_module, "ExtractionService", return_value=mock_extraction_svc):
         with patch.object(wa_module, "get_async_session_local", return_value=session_local_mock):
             response = await client.post(
-                "/whatsapp/webhook",
+                "/webhook",
                 data=make_twilio_form(From="whatsapp:+5491112345678"),
                 headers={"X-Twilio-Signature": "valid-sig"},
             )
@@ -1010,7 +1010,7 @@ async def test_extraction_failed_sends_error(process_invoice_client):
     with patch.object(wa_module, "ExtractionService", return_value=mock_extraction_svc):
         with patch.object(wa_module, "get_async_session_local", return_value=session_local_mock):
             response = await client.post(
-                "/whatsapp/webhook",
+                "/webhook",
                 data=make_twilio_form(From="whatsapp:+5491112345678"),
                 headers={"X-Twilio-Signature": "valid-sig"},
             )
@@ -1057,7 +1057,7 @@ async def test_send_message_failure_after_save(process_invoice_client):
             with patch.object(wa_module, "get_async_session_local", return_value=session_local_mock):
                 with structlog.testing.capture_logs() as log_entries:
                     response = await client.post(
-                        "/whatsapp/webhook",
+                        "/webhook",
                         data=make_twilio_form(From="whatsapp:+5491112345678"),
                         headers={"X-Twilio-Signature": "valid-sig"},
                     )
@@ -1097,7 +1097,7 @@ async def test_background_task_cleared_after_completion(process_invoice_client):
         with patch.object(wa_module, "InvoiceService", return_value=mock_invoice_svc):
             with patch.object(wa_module, "get_async_session_local", return_value=session_local_mock):
                 response = await client.post(
-                    "/whatsapp/webhook",
+                    "/webhook",
                     data=make_twilio_form(From="whatsapp:+5491112345678"),
                     headers={"X-Twilio-Signature": "valid-sig"},
                 )
@@ -1131,7 +1131,7 @@ async def test_multi_media_processes_only_url0(process_invoice_client):
                     form = make_twilio_form(From="whatsapp:+5491112345678", NumMedia="2")
                     form["MediaUrl1"] = "https://api.twilio.com/media/test2"
                     response = await client.post(
-                        "/whatsapp/webhook",
+                        "/webhook",
                         data=form,
                         headers={"X-Twilio-Signature": "valid-sig"},
                     )

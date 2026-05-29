@@ -133,7 +133,7 @@ async def test_invalid_signature(webhook_client):
     mock_provider.validate_signature.return_value = False
 
     response = await client.post(
-        "/gastos/webhook",
+        "/webhook",
         data=make_twilio_form(),
         headers={"X-Twilio-Signature": "invalid-sig"},
     )
@@ -150,7 +150,7 @@ async def test_non_allowlisted_sender(webhook_client, db_session):
     # Do NOT seed allowlist for this sender
 
     response = await client.post(
-        "/gastos/webhook",
+        "/webhook",
         data=make_twilio_form(From="whatsapp:+5499999999999"),
         headers={"X-Twilio-Signature": "valid-sig"},
     )
@@ -178,7 +178,7 @@ async def test_allowlisted_text_only_dispatches_task(webhook_client, db_session)
     with patch.object(gastos_module, "get_async_session_local", return_value=_make_session_local_mock(db_session)):
         with patch("app.routers.gastos.ConversationOrchestrator", return_value=mock_orchestrator):
             response = await client.post(
-                "/gastos/webhook",
+                "/webhook",
                 data=make_twilio_form(From="whatsapp:+5491112345678", NumMedia="0"),
                 headers={"X-Twilio-Signature": "valid-sig"},
             )
@@ -213,12 +213,12 @@ async def test_duplicate_message_sid_no_second_task(webhook_client, db_session):
     with patch.object(gastos_module, "get_async_session_local", return_value=_make_session_local_mock(db_session)):
         with patch("app.routers.gastos.ConversationOrchestrator", return_value=mock_orchestrator):
             response1 = await client.post(
-                "/gastos/webhook",
+                "/webhook",
                 data=form,
                 headers={"X-Twilio-Signature": "valid-sig"},
             )
             response2 = await client.post(
-                "/gastos/webhook",
+                "/webhook",
                 data=form,
                 headers={"X-Twilio-Signature": "valid-sig"},
             )
@@ -254,7 +254,7 @@ async def test_response_returns_before_background_work(webhook_client, db_sessio
     with patch.object(gastos_module, "get_async_session_local", return_value=_make_session_local_mock(db_session)):
         with patch("app.routers.gastos.ConversationOrchestrator", return_value=mock_orchestrator):
             response = await client.post(
-                "/gastos/webhook",
+                "/webhook",
                 data=make_twilio_form(From="whatsapp:+5491112345678", NumMedia="0"),
                 headers={"X-Twilio-Signature": "valid-sig"},
             )
@@ -344,7 +344,7 @@ async def test_media_present_downloads_stores_vision_dispatches(gastos_process_c
             with patch("app.routers.gastos.LocalStorageBackend", return_value=mock_storage):
                 with patch("app.routers.gastos.ConversationOrchestrator", return_value=mock_orchestrator):
                     response = await client.post(
-                        "/gastos/webhook",
+                        "/webhook",
                         data=make_twilio_form(
                             From="whatsapp:+5491112345678",
                             message_sid="SM-media-001",
@@ -395,7 +395,7 @@ async def test_bad_magic_bytes_no_vision_call(gastos_process_client):
             with patch("app.routers.gastos.LocalStorageBackend", return_value=mock_storage):
                 with patch("app.routers.gastos.ConversationOrchestrator", return_value=mock_orchestrator):
                     response = await client.post(
-                        "/gastos/webhook",
+                        "/webhook",
                         data=make_twilio_form(
                             From="whatsapp:+5491112345678",
                             NumMedia="1",
@@ -431,7 +431,7 @@ async def test_text_only_sin_ticket_dispatches_no_media(gastos_process_client):
     with patch.object(gastos_module, "get_async_session_local", return_value=_make_session_local_mock(db_session)):
         with patch("app.routers.gastos.ConversationOrchestrator", return_value=mock_orchestrator):
             response = await client.post(
-                "/gastos/webhook",
+                "/webhook",
                 data=make_twilio_form(
                     From="whatsapp:+5491112345678",
                     NumMedia="0",

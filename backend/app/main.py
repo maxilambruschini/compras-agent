@@ -54,16 +54,16 @@ def create_app() -> FastAPI:
     # T-01-04: agent_mode is read once here at app construction and only gates which router
     # mounts — there is no runtime flip path. Default "gastos" fails closed to the intended
     # demo agent. Misconfig (unknown value) results in neither router mounting, which is safe.
+    # Both agents share the same Twilio webhook URL (POST /webhook); AGENT_MODE
+    # selects which router handles it so Twilio config never needs to change.
     if settings.agent_mode == "invoice":
-        # v1.0 invoice extraction agent — WhatsApp webhook registered only in this mode
         from app.routers.whatsapp import router as whatsapp_router
 
-        app.include_router(whatsapp_router, prefix="/whatsapp", tags=["whatsapp"])
+        app.include_router(whatsapp_router, tags=["whatsapp"])
     elif settings.agent_mode == "gastos":
-        # v2.0 Gastos Bot — conversational expense capture via WhatsApp (D-09)
         from app.routers.gastos import router as gastos_router
 
-        app.include_router(gastos_router, prefix="/gastos", tags=["gastos"])
+        app.include_router(gastos_router, tags=["gastos"])
 
     return app
 

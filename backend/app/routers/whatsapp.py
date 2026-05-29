@@ -179,7 +179,7 @@ def _compute_effective_url(request: Request, settings: Settings) -> str:
         The URL string Twilio used when computing X-Twilio-Signature.
     """
     if settings.webhook_base_url:
-        return f"{settings.webhook_base_url.rstrip('/')}/whatsapp/webhook"
+        return f"{settings.webhook_base_url.rstrip('/')}/webhook"
     return str(request.url)
 
 
