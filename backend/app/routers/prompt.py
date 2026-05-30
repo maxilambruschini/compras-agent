@@ -146,7 +146,14 @@ async def trigger_prompt(
     clean_phone = body.phone_number.strip()
     task_log = log.bind(phone=clean_phone)
 
-    async with db.begin():
+    # Use begin_nested() (SAVEPOINT) if a transaction is already active (test isolation
+    # pattern: test fixtures may seed rows in the same session before the handler runs).
+    # In production, get_db yields a fresh session with no active transaction, so
+    # begin_nested() behaves as a regular savepoint inside the autobegun transaction — both
+    # release (RELEASE SAVEPOINT) and the autobegin commit are correct in that case.
+    # Under the async with block, a return statement commits the savepoint and leaves
+    # the outer transaction open — which is the correct skip semantics for the test.
+    async with db.begin_nested():
         # Step 1: Ensure conversation row exists — race-safe (mirrors conversation.py:222-227)
         ensure_stmt = (
             pg_insert(Conversation)
@@ -168,9 +175,13 @@ async def trigger_prompt(
             task_log.info("prompt.skipped", conv_state=conv.state)
             return PromptResponse(status="skipped", reason="active_conversation")
 
-        # Step 4: Set state to AWAITING_CIERRE — commits when async with exits
+        # Step 4: Set state to AWAITING_CIERRE
         conv.state = ConvState.AWAITING_CIERRE
         task_log.info("prompt.state_set", new_state=ConvState.AWAITING_CIERRE)
+
+    # Savepoint released (RELEASE SAVEPOINT) — flush the mutations to the outer transaction.
+    # Then commit the outer transaction so the state is durable before we send.
+    await db.commit()
 
     # Step 5: Send OUTSIDE the transaction (Pitfall C — send-after-commit ordering).
     # A send failure must NOT roll back the committed state.
