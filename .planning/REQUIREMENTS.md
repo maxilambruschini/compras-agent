@@ -35,8 +35,8 @@ See `docs/plans/2026-05-27-gastos-bot-design.md` and `.planning/research/SUMMARY
 
 ### Caja Closing (CAJA)
 
-- [ ] **CAJA-01**: Manager reports cash-on-hand (efectivo en caja) for a twice-daily closing
-- [ ] **CAJA-02**: Each closing is recorded with the date and which closing (12:00 / 17:00) it corresponds to
+- [x] **CAJA-01**: Manager reports cash-on-hand (efectivo en caja) for a twice-daily closing
+- [x] **CAJA-02**: Each closing is recorded with the date and which closing (12:00 / 17:00) it corresponds to
 
 ### Prompt Trigger (TRIG)
 
@@ -45,8 +45,8 @@ See `docs/plans/2026-05-27-gastos-bot-design.md` and `.planning/research/SUMMARY
 > during a demo. Within a live demo the recipient has just messaged the bot, so the
 > 24h customer-service window is open and a free-form send works without a template.
 
-- [ ] **TRIG-01**: A protected endpoint, when called, sends the prompt message to a given manager via WhatsApp (demo stand-in for the scheduler)
-- [ ] **TRIG-02**: The triggered prompt asks for pending payments, cash-on-hand, and "¿hiciste otra compra hoy?", and branches into the capture / caja-closing flow
+- [x] **TRIG-01**: A protected endpoint, when called, sends the prompt message to a given manager via WhatsApp (demo stand-in for the scheduler)
+- [x] **TRIG-02**: The triggered prompt asks for pending payments, cash-on-hand, and "¿hiciste otra compra hoy?", and branches into the capture / caja-closing flow
 
 ### Admin UI (UI)
 
@@ -87,9 +87,9 @@ See `docs/plans/2026-05-27-gastos-bot-design.md` and `.planning/research/SUMMARY
 | GASTO-05 | Phase 1 | Complete |
 | GASTO-06 | Phase 1 | Complete |
 | GASTO-03 | Phase 2 | Pending |
-| CAJA-01 | Phase 3 | Pending |
-| CAJA-02 | Phase 3 | Pending |
-| TRIG-01 | Phase 3 | Pending |
-| TRIG-02 | Phase 3 | Pending |
+| CAJA-01 | Phase 3 | Complete |
+| CAJA-02 | Phase 3 | Complete |
+| TRIG-01 | Phase 3 | Complete |
+| TRIG-02 | Phase 3 | Complete |
 | UI-01 | Phase 4 | Pending |
 | UI-02 | Phase 4 | Pending |
