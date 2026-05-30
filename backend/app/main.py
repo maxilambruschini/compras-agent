@@ -62,8 +62,10 @@ def create_app() -> FastAPI:
         app.include_router(whatsapp_router, tags=["whatsapp"])
     elif settings.agent_mode == "gastos":
         from app.routers.gastos import router as gastos_router
+        from app.routers.prompt import router as prompt_router
 
         app.include_router(gastos_router, tags=["gastos"])
+        app.include_router(prompt_router, tags=["gastos"])
 
     return app
 
