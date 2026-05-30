@@ -28,12 +28,12 @@ See: .planning/PROJECT.md (updated 2026-05-27)
 ## Current Position
 
 Phase: 03 (prompt-trigger-endpoint) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-05-30
 
 ```
-Progress: [████████░░] 78%
+Progress: [████████░░] 83%
 ```
 
 ## Performance Metrics
@@ -116,10 +116,10 @@ None active.
 
 ## Session Continuity
 
-Last session: 2026-05-30T14:07:06.862Z
-Stopped at: Phase 2 context gathered
-Resume: Run `/gsd:execute-phase 1` to continue with Plan 02
+Last session: 2026-05-30
+Stopped at: Phase 03 Plan 02 complete
+Resume: Run `/gsd:execute-phase 3` to continue with Plan 03 (Wave 2: CajaCierreService + AWAITING_CIERRE FSM handlers)
 
 ## Operator Next Steps
 
-- Run `/gsd:execute-phase 1` to execute Phase 01 Plan 02 (slot extraction service)
+- Run `/gsd:execute-phase 3` to execute Phase 03 Plan 03 (Wave 2: CajaCierreService.save_cierre + AWAITING_CIERRE FSM handlers)
