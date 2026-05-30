@@ -68,7 +68,10 @@
   2. `POST /gastos/prompt` with a missing or invalid token returns HTTP 401 — no message is sent
   3. After receiving the triggered prompt, the manager can reply conversationally and the existing orchestrator handles the full capture / caja-closing branch without any additional endpoint — confirmed end-to-end in the sandbox
   4. A manager who replies with a cash-on-hand amount in the caja-closing flow has a `CajaCierre` row written with the correct `hora_cierre` (12:00 or 17:00, auto-derived from server time) and `fecha` — verifiable in the DB
-**Plans**: TBD
+**Plans**: 3 plans (3 waves — TDD RED→GREEN)
+- [ ] 03-01-PLAN.md — Wave 0 RED: test_prompt_trigger.py + test_conversation_cierre.py + conftest GASTOS_PROMPT_TOKEN + cierre.py skeleton + config token field
+- [ ] 03-02-PLAN.md — Wave 1: POST /gastos/prompt bearer-auth trigger endpoint (constant-time, fail-closed, row-lock, send-after-commit) + main.py mount (TRIG-01, TRIG-02 send)
+- [ ] 03-03-PLAN.md — Wave 2: CajaCierreService.save_cierre (ART hora_cierre/fecha) + AWAITING_CIERRE/AWAITING_CIERRE_CONFIRM FSM branch + gasto handoff (CAJA-01, CAJA-02, TRIG-02 reply)
 
 ### Phase 4: Admin UI
 **Goal**: A manager or accountant can open the web UI and view all captured gastos and caja closings — read-only lists showing only committed records, not in-progress conversation drafts
@@ -90,5 +93,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Data + Conversation Core | 4/4 | Complete   | 2026-05-27 |
 | 2. WhatsApp Gastos Flow | 2/2 | Complete   | 2026-05-28 |
-| 3. Prompt Trigger Endpoint | 0/TBD | Not started | - |
+| 3. Prompt Trigger Endpoint | 0/3 | Planned | - |
 | 4. Admin UI | 0/TBD | Not started | - |
