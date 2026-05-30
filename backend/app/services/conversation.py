@@ -63,6 +63,7 @@ Entry sequence (non-negotiable ordering — see RESEARCH Pattern 5 + cycle-2 HIG
 """
 from __future__ import annotations
 
+import re
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Optional
@@ -102,7 +103,7 @@ AFFIRMATIVE = frozenset({
 })
 
 # Token separators inside a single affirmative phrase (so "sí, dale" splits into ["sí","dale"]).
-_AFFIRMATIVE_SPLIT_RE = __import__("re").compile(r"[\s,.;!]+")
+_AFFIRMATIVE_SPLIT_RE = re.compile(r"[\s,.;!]+")
 
 # ---------------------------------------------------------------------------
 # Deflection reply (D-04)
