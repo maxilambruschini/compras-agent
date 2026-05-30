@@ -372,3 +372,89 @@ async def test_duplicate_cierres_allowed(db_session):
     assert count == 2, (
         f"Expected 2 CajaCierre rows (no unique constraint), got {count}"
     )
+
+
+# ---------------------------------------------------------------------------
+# CR-01: corrupt/missing draft path in _handle_cierre_confirm
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_corrupt_draft_resets_to_awaiting_cierre(db_session):
+    """AWAITING_CIERRE_CONFIRM with corrupt draft JSON → no write, reset to AWAITING_CIERRE.
+
+    When draft_gasto cannot be parsed as DraftCierre (corrupt JSON, schema mismatch,
+    or empty), _handle_cierre_confirm must NOT call save_cierre (which would crash with
+    an IntegrityError on the NOT NULL efectivo_en_caja column). Instead it resets state
+    to AWAITING_CIERRE and asks the manager to re-enter the amount.
+    """
+    from sqlalchemy import select as sa_select
+
+    from app.db.models import CajaCierre
+    from app.services.conversation import ConvState
+
+    # Seed with corrupt JSON — not a valid DraftCierre
+    conv = Conversation(
+        sender_phone=NORM_SENDER,
+        state=ConvState.AWAITING_CIERRE_CONFIRM,
+        draft_gasto='{"this": "is not a DraftCierre"}',
+    )
+    db_session.add(conv)
+    await db_session.commit()
+
+    orch = await _make_orchestrator()
+    sf = _make_session_factory(db_session)
+    # Affirmative reply — would normally trigger save_cierre, but draft is corrupt
+    await orch.handle_message(sf, TEST_SENDER, "sí", "msg-corrupt-draft-001")
+
+    await db_session.refresh(conv)
+    # Must reset back to AWAITING_CIERRE — not crash, not stay in CONFIRM
+    assert conv.state == ConvState.AWAITING_CIERRE, (
+        f"Expected AWAITING_CIERRE after corrupt draft, got {conv.state!r}"
+    )
+    assert conv.draft_gasto is None, "draft_gasto must be cleared after corrupt draft reset"
+
+    # No CajaCierre row must be written
+    result = await db_session.execute(
+        sa_select(CajaCierre).where(CajaCierre.sender_phone == NORM_SENDER)
+    )
+    cierre = result.scalar_one_or_none()
+    assert cierre is None, "No CajaCierre row must be written when draft is corrupt"
+
+
+@pytest.mark.asyncio
+async def test_empty_draft_gasto_resets_to_awaiting_cierre(db_session):
+    """AWAITING_CIERRE_CONFIRM with null draft_gasto → no write, reset to AWAITING_CIERRE.
+
+    DraftCierre() initializes with cierre_monto=None. If draft_gasto is None/empty,
+    the handler must recover gracefully rather than passing None to save_cierre.
+    """
+    from sqlalchemy import select as sa_select
+
+    from app.db.models import CajaCierre
+    from app.services.conversation import ConvState
+
+    # Seed with no draft at all
+    conv = Conversation(
+        sender_phone=NORM_SENDER,
+        state=ConvState.AWAITING_CIERRE_CONFIRM,
+        draft_gasto=None,
+    )
+    db_session.add(conv)
+    await db_session.commit()
+
+    orch = await _make_orchestrator()
+    sf = _make_session_factory(db_session)
+    await orch.handle_message(sf, TEST_SENDER, "sí", "msg-null-draft-001")
+
+    await db_session.refresh(conv)
+    assert conv.state == ConvState.AWAITING_CIERRE, (
+        f"Expected AWAITING_CIERRE after null draft, got {conv.state!r}"
+    )
+    assert conv.draft_gasto is None, "draft_gasto must stay None after null draft reset"
+
+    result = await db_session.execute(
+        sa_select(CajaCierre).where(CajaCierre.sender_phone == NORM_SENDER)
+    )
+    cierre = result.scalar_one_or_none()
+    assert cierre is None, "No CajaCierre row must be written when draft is null"

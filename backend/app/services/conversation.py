@@ -650,6 +650,16 @@ class ConversationOrchestrator:
             except Exception:
                 self._log.warning("conversation.cierre_draft_parse_error")
 
+        # Guard against None cierre_monto — corrupt or missing draft cannot be saved.
+        # Reset to AWAITING_CIERRE so the manager can re-enter the amount cleanly.
+        if cierre_draft.cierre_monto is None:
+            conv.state = ConvState.AWAITING_CIERRE
+            conv.draft_gasto = None
+            return (
+                "No pude recuperar el monto. "
+                "Ingresalo de nuevo (ej: *1500*)."
+            )
+
         if is_confirmation(text):
             # Deterministic confirm gate — GPT never invoked (mirrors _handle_confirm)
             await CajaCierreService().save_cierre(
