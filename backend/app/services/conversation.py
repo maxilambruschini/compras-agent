@@ -96,8 +96,11 @@ class ConvState:
 # ---------------------------------------------------------------------------
 
 AFFIRMATIVE = frozenset({
-    "sí", "si", "dale", "ok", "confirmo", "listo", "va", "yes", "bueno", "claro",
+    "sí", "si", "dale", "ok", "confirmo", "confirmado", "listo", "va", "yes", "bueno", "claro",
 })
+
+# Token separators inside a single affirmative phrase (so "sí, dale" splits into ["sí","dale"]).
+_AFFIRMATIVE_SPLIT_RE = __import__("re").compile(r"[\s,.;!]+")
 
 # ---------------------------------------------------------------------------
 # Deflection reply (D-04)
@@ -117,16 +120,25 @@ DEFLECTION_REPLY: str = (
 # ---------------------------------------------------------------------------
 
 def is_confirmation(text: str) -> bool:
-    """Return True only if text is EXACTLY one of the affirmative tokens (D-05).
+    """Return True only if every token in `text` is an affirmative token (D-05).
 
-    Uses EXACT normalized-token match — strip + lower + rstrip(".!").
-    This is NOT a prefix, startswith, or substring match. Concretely:
-    - "sí"    → True
-    - "si"    → True
-    - "sí, pero cambiá el monto a 1500" → False (routes to correction path)
-    - "si no tiene ticket"              → False (routes to correction path)
+    Tokens are split on whitespace and punctuation (`, . ; !`). After splitting,
+    every non-empty token MUST be in AFFIRMATIVE for the input to count as a
+    confirmation. This accepts common compound affirmatives ("sí, dale",
+    "dale, confirmo") while still routing corrections to the re-extraction path.
+
+    - "sí"                              → True
+    - "si"                              → True
+    - "sí, dale"                        → True   (both tokens affirmative)
+    - "dale, confirmo"                  → True
+    - "sí, pero cambiá el monto a 1500" → False  ("pero" not affirmative → correction)
+    - "si no tiene ticket"              → False  ("no" / "tiene" / "ticket" not affirmative)
+    - ""                                → False
     """
-    return text.strip().lower().rstrip(".!") in AFFIRMATIVE
+    tokens = [t for t in _AFFIRMATIVE_SPLIT_RE.split(text.strip().lower()) if t]
+    if not tokens:
+        return False
+    return all(t in AFFIRMATIVE for t in tokens)
 
 
 def is_cancel(text: str) -> bool:
@@ -293,7 +305,9 @@ class ConversationOrchestrator:
         # This is the at-most-once reply risk (see module docstring).
         # -----------------------------------------------------------
         if reply is not None:
-            await self._provider.send_message(clean_sender, reply)
+            # send_message expects the channel-prefixed identifier (e.g. "whatsapp:+...").
+            # clean_sender is the DB-normalized form (prefix stripped) — do NOT use it here.
+            await self._provider.send_message(sender, reply)
 
     async def _dispatch(
         self,
