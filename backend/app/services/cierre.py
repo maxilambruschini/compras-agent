@@ -72,9 +72,6 @@ class CajaCierreService:
 
     All methods take `session` as the first argument — the service holds no
     session state. Instantiate once per orchestrator call and discard.
-
-    Wave 0 skeleton: save_cierre is a NotImplementedError stub. Full
-    implementation lands in Plan 03 (Wave 2).
     """
 
     def __init__(self) -> None:
@@ -89,7 +86,7 @@ class CajaCierreService:
         """Persist a confirmed CajaCierre row.
 
         Caller owns the transaction — does NOT commit.
-        session.flush() will populate the id (mirrors GastoService.save_gasto).
+        session.flush() populates the id (mirrors GastoService.save_gasto).
 
         Args:
             session: Active AsyncSession. Caller owns the session lifecycle.
@@ -100,8 +97,24 @@ class CajaCierreService:
 
         Returns:
             The persisted CajaCierre ORM object with id populated (after flush).
-
-        Raises:
-            NotImplementedError: Wave 0 stub — full implementation in Plan 03.
         """
-        raise NotImplementedError("save_cierre: Plan 03 implementation pending")
+        clean_phone = sender_phone.removeprefix("whatsapp:").strip()
+        hora_cierre = _derive_hora_cierre()
+        fecha = _today_art()
+
+        cierre = CajaCierre(
+            fecha=fecha,
+            hora_cierre=hora_cierre,
+            efectivo_en_caja=efectivo_en_caja,  # Decimal from parse_ars_amount — never convert to float
+            sender_phone=clean_phone,
+        )
+        session.add(cierre)
+        await session.flush()  # populate id — caller commits (mirrors gasto.py)
+
+        self._log.info(
+            "cierre.saved",
+            id=str(cierre.id),
+            hora_cierre=hora_cierre,
+            monto=str(efectivo_en_caja),
+        )
+        return cierre
