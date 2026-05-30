@@ -685,7 +685,13 @@ class ConversationOrchestrator:
             conv.draft_gasto = None  # reassign (Pitfall E)
             return "Cierre registrado. ✓"
         else:
-            # Re-echo confirm (correction path — mirrors _handle_confirm re-echo)
+            # Re-echo or correction path — no LLM invoked (deterministic gate).
+            # If the manager typed a new bare amount (e.g. "no, 2000"), treat it as
+            # a correction: update the draft with the new amount before re-echoing.
+            corrected = parse_ars_amount(text)
+            if corrected is not None:
+                cierre_draft = DraftCierre(cierre_monto=corrected)
+                conv.draft_gasto = cierre_draft.model_dump_json()  # reassign (Pitfall E)
             hora = _derive_hora_cierre()
             return (
                 f"Cierre {hora}: ${cierre_draft.cierre_monto} ¿confirmás? "
