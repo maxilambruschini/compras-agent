@@ -74,7 +74,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.db.models import Conversation
-from app.models.conversation import DraftGasto, GastoSlots
+from app.models.conversation import DraftCierre, DraftGasto, GastoSlots
 from app.services.amounts import parse_ars_amount
 
 
@@ -351,6 +351,12 @@ class ConversationOrchestrator:
             case ConvState.CONFIRM:
                 reply = await self._handle_confirm(session, conv, draft, text)
 
+            case ConvState.AWAITING_CIERRE:
+                reply = await self._handle_awaiting_cierre(session, conv, text)
+
+            case ConvState.AWAITING_CIERRE_CONFIRM:
+                reply = await self._handle_cierre_confirm(session, conv, text)
+
             case _:
                 # Unknown state — reset to idle
                 log.warning("conversation.unknown_state", state=conv.state)
@@ -575,3 +581,86 @@ class ConversationOrchestrator:
             f"• Ticket: {ticket}\n\n"
             f"¿Confirmás? Respondé *sí*, *dale*, etc. o *cancelar* para cancelar."
         )
+
+    async def _handle_awaiting_cierre(
+        self,
+        session: AsyncSession,
+        conv: Conversation,
+        text: str,
+    ) -> str:
+        """Handle message in awaiting_cierre state — CAJA-01 disambiguation.
+
+        Decision order (non-negotiable):
+        1. parse_ars_amount(text) FIRST (no API cost). Bare amount → cierre path.
+        2. GPT slot extraction to detect gasto intent — only on parse failure.
+        3. Neither → re-prompt.
+
+        Global 'cancelar' is already handled upstream (Step 6 in handle_message) —
+        do NOT add cancel handling here (Pitfall 3 from research).
+        """
+        from app.services.cierre import _derive_hora_cierre
+
+        # 1. Try parse_ars_amount first (fast, no API call) — PATTERNS.md ordering rule
+        monto = parse_ars_amount(text)
+        if monto is not None:
+            draft = DraftCierre(cierre_monto=monto)
+            conv.draft_gasto = draft.model_dump_json()  # reassign, never mutate (Pitfall E)
+            conv.state = ConvState.AWAITING_CIERRE_CONFIRM
+            hora = _derive_hora_cierre()
+            return f"Cierre {hora}: ${monto} ¿confirmás? Respondé *sí* o *cancelar*."
+
+        # 2. GPT slot extraction to detect gasto intent — only on parse failure
+        slots = await self._slot_service.extract(text)
+        if slots.concepto is not None or slots.monto is not None:
+            # Gasto intent → hand off to gasto flow
+            # Reset state and draft BEFORE calling _handle_idle (Pitfall 4 from research)
+            conv.state = ConvState.IDLE
+            conv.draft_gasto = None  # reassign (Pitfall E)
+            return await self._handle_idle(session, conv, DraftGasto(), text)
+
+        # 3. Neither — re-prompt
+        return (
+            "No entendí. Indicá el efectivo en caja (ej: *1500*) "
+            "o describí un gasto para registrarlo."
+        )
+
+    async def _handle_cierre_confirm(
+        self,
+        session: AsyncSession,
+        conv: Conversation,
+        text: str,
+    ) -> str:
+        """Handle message in awaiting_cierre_confirm state — deterministic confirm gate.
+
+        Deterministic is_confirmation() gate — GPT NEVER invoked here (CAJA-01).
+        Affirmative → write CajaCierre, reset to IDLE.
+        Non-affirmative → re-echo confirm prompt (correction path).
+
+        Global 'cancelar' is already handled upstream (Step 6 in handle_message) —
+        do NOT add cancel handling here (Pitfall 3 from research).
+        """
+        from app.services.cierre import CajaCierreService, _derive_hora_cierre
+
+        # Load cierre draft — try/except for safety (mirrors _load_draft pattern)
+        cierre_draft = DraftCierre()
+        if conv.draft_gasto:
+            try:
+                cierre_draft = DraftCierre.model_validate_json(conv.draft_gasto)
+            except Exception:
+                self._log.warning("conversation.cierre_draft_parse_error")
+
+        if is_confirmation(text):
+            # Deterministic confirm gate — GPT never invoked (mirrors _handle_confirm)
+            await CajaCierreService().save_cierre(
+                session, cierre_draft.cierre_monto, conv.sender_phone
+            )
+            conv.state = ConvState.IDLE
+            conv.draft_gasto = None  # reassign (Pitfall E)
+            return "Cierre registrado. ✓"
+        else:
+            # Re-echo confirm (correction path — mirrors _handle_confirm re-echo)
+            hora = _derive_hora_cierre()
+            return (
+                f"Cierre {hora}: ${cierre_draft.cierre_monto} ¿confirmás? "
+                "Respondé *sí* o *cancelar*."
+            )

@@ -101,7 +101,7 @@ async def test_bare_amount_advances_to_confirm(db_session):
 
     conv = Conversation(sender_phone=NORM_SENDER, state=ConvState.AWAITING_CIERRE)
     db_session.add(conv)
-    await db_session.flush()
+    await db_session.commit()  # commit so orchestrator can begin its own transaction
 
     orch = await _make_orchestrator()
     sf = _make_session_factory(db_session)
@@ -129,7 +129,7 @@ async def test_gasto_intent_handoff(db_session):
     # Seed conversation in AWAITING_CIERRE
     conv = Conversation(sender_phone=NORM_SENDER, state=ConvState.AWAITING_CIERRE)
     db_session.add(conv)
-    await db_session.flush()
+    await db_session.commit()  # commit so orchestrator can begin its own transaction
 
     # Slot service returns a gasto intent (concepto set)
     slot_service = AsyncMock()
@@ -178,7 +178,7 @@ async def test_confirm_saves_cierre(db_session):
         draft_gasto=cierre_draft_json,
     )
     db_session.add(conv)
-    await db_session.flush()
+    await db_session.commit()  # commit so orchestrator can begin its own transaction
 
     orch = await _make_orchestrator()
     sf = _make_session_factory(db_session)
@@ -223,7 +223,7 @@ async def test_confirm_requires_exact_token(db_session):
         draft_gasto=cierre_draft_json,
     )
     db_session.add(conv)
-    await db_session.flush()
+    await db_session.commit()  # commit so orchestrator can begin its own transaction
 
     slot_service = AsyncMock()
     slot_service.extract = AsyncMock(return_value=GastoSlots())

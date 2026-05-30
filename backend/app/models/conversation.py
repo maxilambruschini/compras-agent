@@ -59,3 +59,20 @@ class DraftGasto(BaseModel):
     monto: Optional[Decimal] = None          # converted from GastoSlots.monto after extraction
     ticket_image_path: Optional[str] = None  # populated in Phase 2
     failure_count: int = 0                   # consecutive parse failures (CONV-06)
+
+
+class DraftCierre(BaseModel):
+    """Pending caja-closing amount held between AWAITING_CIERRE and AWAITING_CIERRE_CONFIRM.
+
+    Stored as JSON in conversations.draft_gasto (same column as DraftGasto — reused because
+    the FSM is always in either a gasto path or a cierre path, never both simultaneously).
+
+    cierre_monto is the effective_en_caja amount as Decimal (from parse_ars_amount).
+    Never converts to float — passed straight to CajaCierre.efectivo_en_caja (Numeric 14,2).
+
+    Phase 3 (CAJA-01): used by _handle_awaiting_cierre and _handle_cierre_confirm.
+    """
+
+    model_config = ConfigDict(use_enum_values=True)
+
+    cierre_monto: Optional[Decimal] = None
