@@ -17,7 +17,7 @@ from app.config import get_settings
 
 _engine: AsyncEngine | None = None
 _session_local: async_sessionmaker[AsyncSession] | None = None
-_engine_lock = threading.Lock()
+_engine_lock = threading.RLock()  # reentrant — get_async_session_local() calls get_engine() under this lock
 
 
 def get_engine() -> AsyncEngine:
