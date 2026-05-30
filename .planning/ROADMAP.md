@@ -21,7 +21,7 @@
 
 - [x] **Phase 1: Data + Conversation Core** - DB models, Alembic migration, ConversationOrchestrator, SlotExtractionService, GastoService — unit-testable with no WhatsApp or scheduler (completed 2026-05-27)
 - [x] **Phase 2: WhatsApp Gastos Flow** - /gastos webhook router, reactive multi-turn capture end-to-end via Twilio (completed 2026-05-28)
-- [ ] **Phase 3: Prompt Trigger Endpoint** - Protected POST /gastos/prompt endpoint that sends the prompt message to a given manager on demand (demo stand-in for the scheduler)
+- [x] **Phase 3: Prompt Trigger Endpoint** - Protected POST /gastos/prompt endpoint that sends the prompt message to a given manager on demand (demo stand-in for the scheduler) (completed 2026-05-30)
 - [ ] **Phase 4: Admin UI** - Gastos list/detail and Cierres list views cloned from v1.0 invoice pattern
 
 ## Phase Details
@@ -71,7 +71,7 @@
 **Plans**: 3 plans (3 waves — TDD RED→GREEN)
 - [x] 03-01-PLAN.md — Wave 0 RED: test_prompt_trigger.py + test_conversation_cierre.py + conftest GASTOS_PROMPT_TOKEN + cierre.py skeleton + config token field
 - [x] 03-02-PLAN.md — Wave 1: POST /gastos/prompt bearer-auth trigger endpoint (constant-time, fail-closed, row-lock, send-after-commit) + main.py mount (TRIG-01, TRIG-02 send)
-- [ ] 03-03-PLAN.md — Wave 2: CajaCierreService.save_cierre (ART hora_cierre/fecha) + AWAITING_CIERRE/AWAITING_CIERRE_CONFIRM FSM branch + gasto handoff (CAJA-01, CAJA-02, TRIG-02 reply)
+- [x] 03-03-PLAN.md — Wave 2: CajaCierreService.save_cierre (ART hora_cierre/fecha) + AWAITING_CIERRE/AWAITING_CIERRE_CONFIRM FSM branch + gasto handoff (CAJA-01, CAJA-02, TRIG-02 reply)
 
 ### Phase 4: Admin UI
 **Goal**: A manager or accountant can open the web UI and view all captured gastos and caja closings — read-only lists showing only committed records, not in-progress conversation drafts
@@ -93,5 +93,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Data + Conversation Core | 4/4 | Complete   | 2026-05-27 |
 | 2. WhatsApp Gastos Flow | 2/2 | Complete   | 2026-05-28 |
-| 3. Prompt Trigger Endpoint | 2/3 | In Progress|  |
+| 3. Prompt Trigger Endpoint | 3/3 | Complete   | 2026-05-30 |
 | 4. Admin UI | 0/TBD | Not started | - |
