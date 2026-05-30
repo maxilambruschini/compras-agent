@@ -258,7 +258,14 @@ async def test_prompt_text_sent(prompt_client):
 
     mock_provider.send_message.assert_awaited_once()
     call_kwargs = mock_provider.send_message.call_args
-    # Accept both positional and keyword invocations
+    # Recipient must carry the Twilio "whatsapp:" prefix (DB key is prefix-free).
+    sent_to = call_kwargs.kwargs.get("to")
+    if sent_to is None and call_kwargs.args:
+        sent_to = call_kwargs.args[0]
+    assert sent_to.startswith("whatsapp:"), (
+        f"Send recipient must carry the 'whatsapp:' prefix for Twilio. Got: {sent_to!r}"
+    )
+    # Accept both positional and keyword invocations for the text body
     if call_kwargs.kwargs.get("text"):
         sent_text = call_kwargs.kwargs["text"]
     else:

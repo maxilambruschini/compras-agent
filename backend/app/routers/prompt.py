@@ -196,6 +196,9 @@ async def trigger_prompt(
 
     # Step 5: Send OUTSIDE the transaction (Pitfall C — send-after-commit ordering).
     # A send failure must NOT roll back the committed state.
-    await _safe_send(provider, clean_phone, PROMPT_TEXT, task_log)
+    # Twilio requires the "whatsapp:" prefix on the recipient (providers/twilio.py); clean_phone
+    # is the prefix-free DB key, so re-add the prefix for the send — mirrors the orchestrator's
+    # use of the prefixed `sender` (conversation.py:311-313) rather than the stripped form.
+    await _safe_send(provider, f"whatsapp:{clean_phone}", PROMPT_TEXT, task_log)
     task_log.info("prompt.sent")
     return PromptResponse(status="sent")
