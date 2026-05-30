@@ -593,7 +593,7 @@ The trigger endpoint is a route handler (has `Depends`), so it CAN use `get_db` 
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Draft column reuse vs separate column for cierre amount**
    - What we know: `Conversation.draft_gasto TEXT` stores arbitrary JSON; both gasto and cierre states use it.
