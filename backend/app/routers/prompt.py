@@ -35,7 +35,7 @@ import secrets
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -97,6 +97,16 @@ def verify_token(
 class PromptRequest(BaseModel):
     phone_number: str
 
+    @field_validator("phone_number")
+    @classmethod
+    def validate_phone(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("phone_number must not be empty")
+        if len(v) > 30:
+            raise ValueError("phone_number exceeds maximum length of 30 characters")
+        return v
+
 
 class PromptResponse(BaseModel):
     status: str
@@ -143,7 +153,8 @@ async def trigger_prompt(
 
     Twilio 24h CS window assumption: see module docstring.
     """
-    clean_phone = body.phone_number.strip()
+    # phone_number is already stripped and validated by PromptRequest.validate_phone
+    clean_phone = body.phone_number
     task_log = log.bind(phone=clean_phone)
 
     # Use begin_nested() (SAVEPOINT) if a transaction is already active (test isolation
@@ -185,6 +196,6 @@ async def trigger_prompt(
 
     # Step 5: Send OUTSIDE the transaction (Pitfall C — send-after-commit ordering).
     # A send failure must NOT roll back the committed state.
-    await _safe_send(provider, body.phone_number, PROMPT_TEXT, task_log)
+    await _safe_send(provider, clean_phone, PROMPT_TEXT, task_log)
     task_log.info("prompt.sent")
     return PromptResponse(status="sent")
