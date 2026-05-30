@@ -87,6 +87,8 @@ class ConvState:
     AWAITING_MONTO = "awaiting_monto"
     AWAITING_TICKET = "awaiting_ticket"
     CONFIRM = "confirm"
+    AWAITING_CIERRE = "awaiting_cierre"                  # Phase 3: cierre prompt sent, awaiting efectivo amount
+    AWAITING_CIERRE_CONFIRM = "awaiting_cierre_confirm"  # Phase 3: holds amount pending manager confirmation
 
 
 # ---------------------------------------------------------------------------
