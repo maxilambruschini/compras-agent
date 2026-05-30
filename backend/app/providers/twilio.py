@@ -126,7 +126,10 @@ class TwilioProvider:
                 f"Refusing to fetch non-Twilio media URL: {media_url!r}. "
                 f"URL must start with {TWILIO_MEDIA_URL_PREFIX!r} (SSRF guard T-3-03)."
             )
-        async with httpx.AsyncClient() as client:
+        # Twilio's api.twilio.com media URL returns 307 → mms.twiliocdn.com (signed CDN URL).
+        # SSRF guard above already validates the initial URL is api.twilio.com; the redirect
+        # target is Twilio-controlled and signed, so following it is safe.
+        async with httpx.AsyncClient(follow_redirects=True) as client:
             response = await client.get(
                 media_url,
                 auth=(self._account_sid, self._auth_token),
