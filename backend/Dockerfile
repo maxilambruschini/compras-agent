@@ -6,8 +6,8 @@ WORKDIR /app
 RUN pip install uv
 
 # Install dependencies first for Docker layer caching
-COPY pyproject.toml .
-RUN uv sync --no-dev --system --no-cache
+COPY pyproject.toml uv.lock* ./
+RUN uv pip install --system --no-cache .
 
 COPY . .
 
