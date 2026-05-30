@@ -610,14 +610,30 @@ class ConversationOrchestrator:
             hora = _derive_hora_cierre()
             return f"Cierre {hora}: ${monto} ¿confirmás? Respondé *sí* o *cancelar*."
 
-        # 2. GPT slot extraction to detect gasto intent — only on parse failure
+        # 2. GPT slot extraction to detect gasto intent — only on parse failure.
+        # Extract ONCE and apply the result directly to avoid a second LLM call
+        # (CR-02: calling _handle_idle with the same text would re-invoke extract()
+        # non-deterministically and could silently discard the detected intent).
         slots = await self._slot_service.extract(text)
         if slots.concepto is not None or slots.monto is not None:
-            # Gasto intent → hand off to gasto flow
-            # Reset state and draft BEFORE calling _handle_idle (Pitfall 4 from research)
+            # Gasto intent detected — apply slots directly without a second LLM call.
+            # Reset state and draft BEFORE advancing (Pitfall 4 from research).
             conv.state = ConvState.IDLE
             conv.draft_gasto = None  # reassign (Pitfall E)
-            return await self._handle_idle(session, conv, DraftGasto(), text)
+            draft = patch_draft(DraftGasto(), slots)
+            if draft.concepto is None:
+                # Monto-only signal: concepto still missing → ask for concepto
+                self._save_draft(conv, draft)
+                conv.state = ConvState.AWAITING_MONTO
+                return "¿Cuál fue el concepto del gasto? (ej: queso en supermercado)"
+            else:
+                # Concepto known → ticket-first flow (D-01)
+                conv.state = ConvState.AWAITING_TICKET
+                self._save_draft(conv, draft)
+                return (
+                    f"Entendido, *{draft.concepto}*. "
+                    "¿Tenés foto del ticket de pago? Enviá la foto o respondé *sin ticket*."
+                )
 
         # 3. Neither — re-prompt
         return (
