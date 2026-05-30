@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Gastos Bot
-status: executing
-stopped_at: Phase 2 context gathered
-last_updated: "2026-05-28T01:54:56.120Z"
+status: ready_to_plan
+stopped_at: Phase 02 complete (2/2) — ready to discuss Phase 3
+last_updated: 2026-05-30T13:11:15.169Z
 last_activity: 2026-05-28 -- Phase 02 execution started
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 6
   percent: 25
 ---
 
@@ -23,14 +23,14 @@ See: .planning/PROJECT.md (updated 2026-05-27)
 **Core value:** An employee sends a photo of an invoice over WhatsApp and the data lands correctly in the database — no manual entry, no lost receipts.
 **v2.0 goal:** A conversational WhatsApp bot that lets restaurant managers capture cash expenses (gastos) and report twice-daily cash closings — so payments stop getting forgotten.
 **Demo build:** No proactive scheduler — a manual trigger endpoint stands in for the twice-daily prompts.
-**Current focus:** Phase 02 — whatsapp-gastos-flow
+**Current focus:** Phase 3 — prompt trigger endpoint
 
 ## Current Position
 
-Phase: 02 (whatsapp-gastos-flow) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 02
-Last activity: 2026-05-28 -- Phase 02 execution started
+Phase: 3
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-05-30
 
 ```
 Progress: [██████████] 100%
@@ -52,6 +52,7 @@ Progress: [██████████] 100%
 | 2. WhatsApp Gastos Flow | TBD | - | - |
 | 3. Prompt Trigger Endpoint | TBD | - | - |
 | 4. Admin UI | TBD | - | - |
+| 02 | 2 | - | - |
 
 *Updated after each plan completion*
 
