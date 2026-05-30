@@ -53,6 +53,9 @@ def env_setup():
     # v2.0 Gastos Bot: set AGENT_MODE so Settings sees the new field in all tests.
     # CONVERSATION_TIMEOUT_HOURS is intentionally omitted — the int default of 4 is sufficient.
     mp.setenv("AGENT_MODE", "gastos")
+    # Phase 3: Prompt trigger bearer token — set so happy-path endpoint tests can authenticate.
+    # Tests that check 401 pass a wrong token in the request header, not by unsetting this.
+    mp.setenv("GASTOS_PROMPT_TOKEN", "test-prompt-token")
     # NOTE: WEBHOOK_BASE_URL is NOT set at session scope; individual tests that need it
     # must patch it via monkeypatch and call get_settings.cache_clear() before/after.
 

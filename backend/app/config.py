@@ -44,6 +44,12 @@ class Settings(BaseSettings):
     twilio_auth_token: str = ""
     twilio_from_number: str = ""  # must include "whatsapp:" prefix, e.g. "whatsapp:+14155238886"
 
+    # Phase 3: Prompt trigger endpoint bearer token (TRIG-01)
+    # Empty string default so existing tests that don't set this env var still instantiate Settings.
+    # The fail-closed enforcement (deny all when empty) lives in verify_token (routers/prompt.py),
+    # not here — empty = auth disabled at runtime → 401 for every request.
+    gastos_prompt_token: str = ""
+
     # Optional: when set, signature validation uses this URL instead of str(request.url).
     # Required when running behind ngrok or a reverse proxy where request.url reflects the
     # internal host rather than the public URL that Twilio signed. (resolves 03-REVIEWS.md
