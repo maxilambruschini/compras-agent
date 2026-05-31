@@ -678,9 +678,12 @@ const { data, isPending, error } = useQuery({
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **`settings.storage_path` field name**
+> Both resolved during planning: Q1 — confirmed `settings.storage_path` (default `/data/invoices`)
+> in `backend/app/config.py`. Q2 — CORS scoped to `http://localhost:5173` for the demo.
+
+1. **`settings.storage_path` field name** — RESOLVED (`settings.storage_path`)
    - What we know: `LocalStorageBackend` takes a `root: str` at construction. The env var
      is `STORAGE_PATH` (from `D-08`). The config `Settings` object has a field for this.
    - What's unclear: The exact attribute name on `Settings` (e.g., `storage_path`,
