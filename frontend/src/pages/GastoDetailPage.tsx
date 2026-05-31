@@ -82,7 +82,7 @@ export default function GastoDetailPage() {
                   src={ticketUrl}
                   alt="Ticket de gasto"
                   className="ticket-image"
-                  onClick={() => window.open(ticketUrl, "_blank")}
+                  onClick={() => window.open(ticketUrl, "_blank", "noopener,noreferrer")}
                 />
               </>
             ) : (
