@@ -83,7 +83,7 @@
   3. The Cierres page lists all `caja_cierres` rows with fecha, hora_cierre (12:00 / 17:00), efectivo_en_caja, and sender_phone; no editing controls are shown (read-only)
 **Plans**: 3 plans (Wave 0 RED → Wave 1 backend → Wave 2 frontend)
 - [x] 04-01-PLAN.md — Wave 0 RED: backend/tests/test_admin.py covering all UI-01/UI-02 read-endpoint behaviors (list, ?from/?to/?q filter, detail, 404, ticket-404, drafts-not-exposed, Decimal-as-string, cierres list, CORS header)
-- [ ] 04-02-PLAN.md — Wave 1: admin.py read router (GET /api/gastos, /api/gastos/{id}, /api/gastos/{id}/ticket, /api/cierres) + CORSMiddleware + /api mount in main.py + ROADMAP SC correction (turns test_admin.py green)
+- [x] 04-02-PLAN.md — Wave 1: admin.py read router (GET /api/gastos, /api/gastos/{id}, /api/gastos/{id}/ticket, /api/cierres) + CORSMiddleware + /api mount in main.py + ROADMAP SC correction (turns test_admin.py green)
 - [ ] 04-03-PLAN.md — Wave 2: frontend (react-router v7 + @tanstack/react-query deps, router/query wiring, typed client, formatARS/formatDate, --secondary-surface token, Gastos list/detail + Cierres pages per UI-SPEC)
 **UI hint**: yes
 
@@ -97,4 +97,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Data + Conversation Core | 4/4 | Complete   | 2026-05-27 |
 | 2. WhatsApp Gastos Flow | 2/2 | Complete   | 2026-05-28 |
 | 3. Prompt Trigger Endpoint | 3/3 | Complete   | 2026-05-30 |
-| 4. Admin UI | 1/3 | In Progress|  |
+| 4. Admin UI | 2/3 | In Progress|  |
