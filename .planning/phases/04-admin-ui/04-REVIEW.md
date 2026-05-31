@@ -16,7 +16,18 @@ findings:
   warning: 3
   info: 2
   total: 5
-status: issues_found
+status: resolved
+resolution: |
+  WR-01 (ILIKE wildcard escaping) — FIXED (commit 0a53a60) + regression test
+  test_list_gastos_search_percent_literal.
+  WR-02 (hardcoded CORS origin) — FIXED (commit f90589c): moved to
+  Settings.allowed_origins (env ALLOWED_ORIGINS), localhost default preserved.
+  IN-01 (window.open noopener) — FIXED (commit d10c815).
+  WR-03 (no auth on admin endpoints) — NOT FIXED: locked PROJECT.md / 04-CONTEXT.md
+  decision (admin auth deferred to v3, demo build). Accepted as intentional deferral.
+  IN-02 (404 vs connectivity message) — deferred (minor UX, out of scope).
+  Backend: 184 passed, 1 skipped. Frontend: pnpm build + lint clean.
+status_history: [issues_found, resolved]
 ---
 
 # Phase 4: Code Review Report
