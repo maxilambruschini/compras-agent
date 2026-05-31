@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Gastos Bot
-status: executing
-stopped_at: Phase 03 Plan 02 complete
-last_updated: "2026-05-31T04:00:08.898Z"
+status: verifying
+stopped_at: Phase 04 Plan 03 complete — all plans done, ready for verification
+last_updated: "2026-05-31T04:07:40.505Z"
 last_activity: 2026-05-31
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 12
-  completed_plans: 11
-  percent: 75
+  completed_plans: 12
+  percent: 100
 ---
 
 # Project State
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-05-27)
 
 Phase: 04 (admin-ui) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-05-31
 
 ```
-Progress: [█████████░] 92%
+Progress: [██████████] 100%
 ```
 
 ## Performance Metrics
@@ -64,6 +64,7 @@ Progress: [█████████░] 92%
 | Phase 01-data-conversation-core P04 | 35m | 3 tasks | 3 files |
 | Phase 03-prompt-trigger-endpoint P03 | 10m | 2 tasks | 4 files |
 | Phase 04-admin-ui PP02 | 15m | 2 tasks | 2 files |
+| Phase 04-admin-ui PP03 | 25m | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,9 @@ Key decisions affecting v2.0 work:
 - **CajaCierre created in Phase 1** — alongside conversations/gastos in one migration; no schema debt; reactive write is Phase 2.
 - [Phase ?]: GastoSlots.monto is Optional[float] — GPT JSON number sidesteps Decimal trap
 - [Phase ?]: parse_ars_amount() validates ARS format via regex before stripping separators
+- [Phase ?]: react-router v7 unified package ('react-router'), not 'react-router-dom'
+- [Phase ?]: Layout route wraps NavTabs + Outlet so navigation persists across all three views
+- [Phase ?]: formatDate splits on '-' to avoid UTC timezone shift on date-only ISO strings
 
 ### Pending Todos
 
@@ -118,8 +122,8 @@ None active.
 
 ## Session Continuity
 
-Last session: 2026-05-31T04:00:03.705Z
-Stopped at: Phase 03 Plan 02 complete
+Last session: 2026-05-31T04:07:40.500Z
+Stopped at: Phase 04 Plan 03 complete — all plans done, ready for verification
 Resume: Run `/gsd:execute-phase 3` to continue with Plan 03 (Wave 2: CajaCierreService + AWAITING_CIERRE FSM handlers)
 
 ## Operator Next Steps
