@@ -46,7 +46,7 @@ def create_app() -> FastAPI:
     # CORS must be outermost so OPTIONS preflight is intercepted first (T-04-03).
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:5173"],  # Vite dev origin
+        allow_origins=settings.allowed_origins,  # configurable via ALLOWED_ORIGINS env var (WR-02)
         allow_credentials=False,   # no cookies/auth in Phase 4
         allow_methods=["GET"],     # read-only phase
         allow_headers=["*"],

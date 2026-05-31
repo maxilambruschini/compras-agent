@@ -50,6 +50,12 @@ class Settings(BaseSettings):
     # not here — empty = auth disabled at runtime → 401 for every request.
     gastos_prompt_token: str = ""
 
+    # CORS allowed origins (WR-02 — configurable for non-dev deployments)
+    # pydantic-settings parses a JSON array (ALLOWED_ORIGINS='["https://example.com"]') or
+    # a single value as a one-element list. Default keeps localhost:5173 so the demo and
+    # existing test_cors_header continue to pass without any env change.
+    allowed_origins: list[str] = ["http://localhost:5173"]
+
     # Optional: when set, signature validation uses this URL instead of str(request.url).
     # Required when running behind ngrok or a reverse proxy where request.url reflects the
     # internal host rather than the public URL that Twilio signed. (resolves 03-REVIEWS.md
