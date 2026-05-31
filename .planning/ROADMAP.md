@@ -22,7 +22,7 @@
 - [x] **Phase 1: Data + Conversation Core** - DB models, Alembic migration, ConversationOrchestrator, SlotExtractionService, GastoService — unit-testable with no WhatsApp or scheduler (completed 2026-05-27)
 - [x] **Phase 2: WhatsApp Gastos Flow** - /gastos webhook router, reactive multi-turn capture end-to-end via Twilio (completed 2026-05-28)
 - [x] **Phase 3: Prompt Trigger Endpoint** - Protected POST /gastos/prompt endpoint that sends the prompt message to a given manager on demand (demo stand-in for the scheduler) (completed 2026-05-30)
-- [ ] **Phase 4: Admin UI** - Gastos list/detail and Cierres list views cloned from v1.0 invoice pattern
+- [ ] **Phase 4: Admin UI** - Gastos list/detail and Cierres list views (read-only), backed by new FastAPI read endpoints
 
 ## Phase Details
 
@@ -78,10 +78,13 @@
 **Depends on**: Phase 3
 **Requirements**: UI-01, UI-02
 **Success Criteria** (what must be TRUE):
-  1. The Gastos page lists all rows from the `gastos` table (confirmed status only — no `conversations.draft_gasto` rows appear), with columns for fecha, concepto, lugar, monto, and ticket indicator; rows are filterable by date range and searchable by concepto or lugar
-  2. Clicking a gasto row shows the full detail: all fields, the ticket image (if present), and the ticket extraction JSON (if present)
-  3. The Cierres page lists all `caja_cierres` rows with fecha, hora_cierre (12:00 / 17:00), and efectivo_en_caja; no editing controls are shown (read-only)
-**Plans**: TBD
+  1. The Gastos page lists all rows from the `gastos` table (committed records only — no `conversations.draft_gasto` rows appear), with columns for fecha, concepto, monto, ticket indicator, and sender_phone; rows are filterable by date range and searchable by concepto (lugar/proveedor is part of the free-text concepto — there is no separate `lugar` column)
+  2. Clicking a gasto row shows the full detail: all persisted fields plus the ticket image (if `ticket_image_path` is present). No ticket-extraction-JSON panel — none is persisted in the schema
+  3. The Cierres page lists all `caja_cierres` rows with fecha, hora_cierre (12:00 / 17:00), efectivo_en_caja, and sender_phone; no editing controls are shown (read-only)
+**Plans**: 3 plans (Wave 0 RED → Wave 1 backend → Wave 2 frontend)
+- [ ] 04-01-PLAN.md — Wave 0 RED: backend/tests/test_admin.py covering all UI-01/UI-02 read-endpoint behaviors (list, ?from/?to/?q filter, detail, 404, ticket-404, drafts-not-exposed, Decimal-as-string, cierres list, CORS header)
+- [ ] 04-02-PLAN.md — Wave 1: admin.py read router (GET /api/gastos, /api/gastos/{id}, /api/gastos/{id}/ticket, /api/cierres) + CORSMiddleware + /api mount in main.py + ROADMAP SC correction (turns test_admin.py green)
+- [ ] 04-03-PLAN.md — Wave 2: frontend (react-router v7 + @tanstack/react-query deps, router/query wiring, typed client, formatARS/formatDate, --secondary-surface token, Gastos list/detail + Cierres pages per UI-SPEC)
 **UI hint**: yes
 
 ## Progress
@@ -94,4 +97,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Data + Conversation Core | 4/4 | Complete   | 2026-05-27 |
 | 2. WhatsApp Gastos Flow | 2/2 | Complete   | 2026-05-28 |
 | 3. Prompt Trigger Endpoint | 3/3 | Complete   | 2026-05-30 |
-| 4. Admin UI | 0/TBD | Not started | - |
+| 4. Admin UI | 0/3 | Not started | - |
