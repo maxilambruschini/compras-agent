@@ -50,8 +50,8 @@ See `docs/plans/2026-05-27-gastos-bot-design.md` and `.planning/research/SUMMARY
 
 ### Admin UI (UI)
 
-- [ ] **UI-01**: Manager/accountant can list and view captured gastos in the web UI
-- [ ] **UI-02**: Manager/accountant can list and view caja closings in the web UI
+- [x] **UI-01**: Manager/accountant can list and view captured gastos in the web UI
+- [x] **UI-02**: Manager/accountant can list and view caja closings in the web UI
 
 ## Future Requirements (deferred)
 
@@ -91,5 +91,5 @@ See `docs/plans/2026-05-27-gastos-bot-design.md` and `.planning/research/SUMMARY
 | CAJA-02 | Phase 3 | Complete |
 | TRIG-01 | Phase 3 | Complete |
 | TRIG-02 | Phase 3 | Complete |
-| UI-01 | Phase 4 | Pending |
-| UI-02 | Phase 4 | Pending |
+| UI-01 | Phase 4 | Complete |
+| UI-02 | Phase 4 | Complete |
