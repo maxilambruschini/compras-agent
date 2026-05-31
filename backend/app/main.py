@@ -10,6 +10,7 @@ from contextlib import asynccontextmanager
 
 import structlog
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 
@@ -40,6 +41,16 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
         debug=settings.debug,
     )
+    # CORSMiddleware must be added BEFORE any include_router call.
+    # Starlette applies middleware in reverse-add order (last added = outermost).
+    # CORS must be outermost so OPTIONS preflight is intercepted first (T-04-03).
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:5173"],  # Vite dev origin
+        allow_credentials=False,   # no cookies/auth in Phase 4
+        allow_methods=["GET"],     # read-only phase
+        allow_headers=["*"],
+    )
     # Import router inside factory — avoids circular import at module init time
     from app.routers.health import router as health_router
 
@@ -63,9 +74,11 @@ def create_app() -> FastAPI:
     elif settings.agent_mode == "gastos":
         from app.routers.gastos import router as gastos_router
         from app.routers.prompt import router as prompt_router
+        from app.routers.admin import router as admin_router
 
         app.include_router(gastos_router, tags=["gastos"])
         app.include_router(prompt_router, tags=["gastos"])
+        app.include_router(admin_router, prefix="/api", tags=["admin"])
 
     return app
 
