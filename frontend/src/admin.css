@@ -1,0 +1,391 @@
+/* admin.css — Phase 4 component styles
+ * Extends index.css tokens. Does NOT rewrite index.css.
+ * Overrides #root text-align:center and sets 16px body for data-dense UI. */
+
+/* Body override: 16px as per UI-SPEC (index.css sets 18px) */
+body {
+  font-size: 16px;
+}
+
+/* Left-align content inside #root (index.css sets text-align:center) */
+#root {
+  text-align: left;
+}
+
+/* ---------------------------------------------------------------------------
+   Nav bar (48px, two-tab) */
+
+.nav-bar {
+  height: 48px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: stretch;
+  padding: 0 24px;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.nav-tab {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 16px;
+  font-family: var(--sans);
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.nav-tab:hover {
+  color: var(--text-h);
+}
+
+.nav-tab.active {
+  color: var(--text-h);
+  border-bottom-color: var(--accent);
+}
+
+/* ---------------------------------------------------------------------------
+   Page layout */
+
+.page-content {
+  flex: 1;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--text-h);
+  margin: 0 0 20px 0;
+  font-family: var(--sans);
+}
+
+/* ---------------------------------------------------------------------------
+   Filter bar (GastosListPage) */
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: var(--secondary-surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  margin-bottom: 0;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-label {
+  font-size: 14px;
+  color: var(--text);
+  font-family: var(--sans);
+  white-space: nowrap;
+}
+
+.filter-input {
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 16px;
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text-h);
+  box-sizing: border-box;
+}
+
+.filter-input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.filter-input[type="text"] {
+  min-width: 220px;
+}
+
+.filter-clear {
+  font-size: 16px;
+  color: var(--text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+  font-family: var(--sans);
+  text-decoration: none;
+}
+
+.filter-clear:hover {
+  text-decoration: underline;
+  color: var(--text-h);
+}
+
+/* ---------------------------------------------------------------------------
+   Table */
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--sans);
+}
+
+.data-table thead {
+  background: var(--secondary-surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table thead th {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 8px 16px;
+  text-align: left;
+}
+
+.data-table thead th.col-right {
+  text-align: right;
+}
+
+.data-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.data-table tbody tr:hover {
+  background: var(--secondary-surface);
+}
+
+.data-table tbody td {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text-h);
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.data-table tbody td.col-right {
+  text-align: right;
+}
+
+/* Clickable rows (Gastos list) */
+.data-table.clickable-rows tbody tr {
+  cursor: pointer;
+}
+
+/* Non-clickable rows (Cierres list) */
+.data-table.static-rows tbody tr {
+  cursor: default;
+}
+
+/* min-content column (ticket) */
+.col-shrink {
+  width: 1%;
+  white-space: nowrap;
+}
+
+/* Responsive: hide "Registrado por" at < 768px */
+@media (max-width: 767px) {
+  .col-sender {
+    display: none;
+  }
+
+  .filter-bar {
+    flex-wrap: wrap;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Ticket badge pill */
+
+.ticket-badge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+  font-size: 12px;
+  border-radius: 9999px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.ticket-none {
+  color: var(--text);
+}
+
+/* ---------------------------------------------------------------------------
+   Spinner */
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner-ring {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+.spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  gap: 12px;
+  color: var(--text);
+  font-size: 16px;
+  font-family: var(--sans);
+}
+
+/* ---------------------------------------------------------------------------
+   Empty state */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  text-align: center;
+  padding: 24px;
+  gap: 8px;
+}
+
+.empty-state-heading {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text-h);
+  margin: 0;
+  font-family: var(--sans);
+}
+
+.empty-state-body {
+  font-size: 16px;
+  color: var(--text);
+  margin: 0;
+  font-family: var(--sans);
+  max-width: 420px;
+}
+
+/* ---------------------------------------------------------------------------
+   Error banner */
+
+.error-banner {
+  background: rgba(239, 68, 68, 0.08);
+  border-left: 3px solid #dc2626;
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.error-banner-heading {
+  font-size: 16px;
+  font-weight: 500;
+  color: #dc2626;
+  margin: 0 0 4px 0;
+  font-family: var(--sans);
+}
+
+.error-banner-body {
+  font-size: 14px;
+  color: var(--text);
+  margin: 0;
+  font-family: var(--sans);
+}
+
+/* ---------------------------------------------------------------------------
+   Detail page */
+
+.detail-back-link {
+  display: inline-block;
+  font-size: 14px;
+  color: var(--accent);
+  text-decoration: none;
+  margin-bottom: 20px;
+}
+
+.detail-back-link:hover {
+  text-decoration: underline;
+}
+
+.detail-dl {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 12px 0;
+  margin: 0 0 24px 0;
+}
+
+.detail-dl dt {
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 400;
+  text-align: right;
+  padding-right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.detail-dl dd {
+  font-size: 16px;
+  color: var(--text-h);
+  font-weight: 400;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* ---------------------------------------------------------------------------
+   Ticket image section */
+
+.ticket-section {
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  margin-top: 8px;
+}
+
+.ticket-section-title {
+  font-size: 14px;
+  color: var(--text);
+  margin: 0 0 12px 0;
+  font-family: var(--sans);
+  font-weight: 400;
+}
+
+.ticket-image {
+  max-width: 100%;
+  max-height: 480px;
+  object-fit: contain;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  display: block;
+}
+
+.ticket-absent {
+  font-size: 14px;
+  color: var(--text);
+  font-family: var(--sans);
+}
