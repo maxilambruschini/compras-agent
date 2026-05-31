@@ -92,7 +92,13 @@ async def list_gastos(
     if to is not None:
         stmt = stmt.where(Gasto.fecha <= to)
     if q and q.strip():
-        stmt = stmt.where(Gasto.concepto.ilike(f"%{q.strip()}%"))
+        escaped = (
+            q.strip()
+            .replace("\\", "\\\\")  # escape the escape char first
+            .replace("%", "\\%")
+            .replace("_", "\\_")
+        )
+        stmt = stmt.where(Gasto.concepto.ilike(f"%{escaped}%", escape="\\"))
     result = await db.execute(stmt)
     return list(result.scalars().all())
 

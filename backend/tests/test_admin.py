@@ -209,6 +209,31 @@ async def test_list_gastos_search(admin_client, db_session):
     assert "Verduras frescas" not in conceptos
 
 
+@pytest.mark.asyncio
+async def test_list_gastos_search_percent_literal(admin_client, db_session):
+    """?q= with a literal '%' must match only the exact substring, not act as ILIKE wildcard.
+
+    WR-01 regression gate: before the fix, searching for '50%' would match any
+    concepto containing '50' followed by anything (wildcard). After escaping,
+    only the concepto that literally contains '50%' must be returned.
+    """
+    client, _app = admin_client
+
+    literal_match = _make_gasto(concepto="Descuento 50%")
+    no_match = _make_gasto(concepto="Descuento 500 pesos")  # contains '50' but not '50%'
+    db_session.add(literal_match)
+    db_session.add(no_match)
+    await db_session.flush()
+
+    resp = await client.get("/api/gastos", params={"q": "50%"})
+    assert resp.status_code == 200
+    body = resp.json()
+    conceptos = [row["concepto"] for row in body]
+    # Only the row with literal '50%' must match
+    assert "Descuento 50%" in conceptos
+    assert "Descuento 500 pesos" not in conceptos
+
+
 # ---------------------------------------------------------------------------
 # UI-01: GET /api/gastos/{id} — detail + 404
 # ---------------------------------------------------------------------------
