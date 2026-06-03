@@ -19,7 +19,7 @@ See `docs/plans/2026-05-27-gastos-bot-design.md` and `.planning/research/SUMMARY
 
 - [x] **GASTO-01**: Manager records a cash expense by texting a free-form intent in Spanish (e.g. "Pago de queso en supermercado")
 - [x] **GASTO-02**: Bot collects the required gasto fields (concepto, lugar/proveedor, monto) through follow-up questions when not provided up front
-- [ ] **GASTO-03**: Bot requests a photo of the ticket and stores it linked to the gasto record
+- [x] **GASTO-03**: Bot requests a photo of the ticket and stores it linked to the gasto record
 - [x] **GASTO-04**: Manager can skip the ticket ("sin ticket") and still save the gasto
 - [x] **GASTO-05**: Bot shows a summary and requires explicit confirmation before writing the gasto
 - [x] **GASTO-06**: Manager can correct a field or cancel the gasto before it is saved
@@ -86,7 +86,7 @@ See `docs/plans/2026-05-27-gastos-bot-design.md` and `.planning/research/SUMMARY
 | GASTO-04 | Phase 1 | Complete |
 | GASTO-05 | Phase 1 | Complete |
 | GASTO-06 | Phase 1 | Complete |
-| GASTO-03 | Phase 2 | Pending |
+| GASTO-03 | Phase 2 | Complete |
 | CAJA-01 | Phase 3 | Complete |
 | CAJA-02 | Phase 3 | Complete |
 | TRIG-01 | Phase 3 | Complete |
