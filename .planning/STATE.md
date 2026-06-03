@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Gastos Bot
-status: verifying
+status: Awaiting next milestone
 stopped_at: Phase 04 Plan 03 complete — all plans done, ready for verification
-last_updated: "2026-05-31T04:07:40.505Z"
-last_activity: 2026-05-31
+last_updated: "2026-06-03T02:54:05.025Z"
+last_activity: 2026-06-03 — Milestone v2.0 completed and archived
 progress:
   total_phases: 4
   completed_phases: 4
@@ -27,14 +27,10 @@ See: .planning/PROJECT.md (updated 2026-05-27)
 
 ## Current Position
 
-Phase: 04 (admin-ui) — EXECUTING
-Plan: 3 of 3
-Status: Phase complete — ready for verification
-Last activity: 2026-05-31
-
-```
-Progress: [██████████] 100%
-```
+Phase: Milestone v2.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-03 — Milestone v2.0 completed and archived
 
 ## Performance Metrics
 
@@ -128,4 +124,4 @@ Resume: Run `/gsd:execute-phase 3` to continue with Plan 03 (Wave 2: CajaCierreS
 
 ## Operator Next Steps
 
-- Run `/gsd:execute-phase 3` to execute Phase 03 Plan 03 (Wave 2: CajaCierreService.save_cierre + AWAITING_CIERRE FSM handlers)
+- Start the next milestone with /gsd-new-milestone

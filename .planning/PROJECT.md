@@ -36,17 +36,21 @@ An employee sends a photo of an invoice over WhatsApp and the data lands correct
 - ✓ Admin UI: delete invoices — v1.0
 - ✓ Admin UI: view per-invoice line items — v1.0
 - ✓ Duplicate invoice detection prevents double entries — v1.0
+- ✓ Manager records a cash expense conversationally over WhatsApp — v2.0
+- ✓ Bot collects required gasto fields through follow-up questions — v2.0
+- ✓ Bot requests and stores a photo of the payment ticket (GPT-4o vision reads the amount) — v2.0
+- ✓ Bot prompts a manager on demand via a protected trigger endpoint — v2.0 (demo stand-in; the real twice-daily scheduler is deferred to the production path)
+- ✓ Manager reports cash-on-hand for the twice-daily caja closing (CajaCierre, ART hora_cierre 12:00/17:00) — v2.0
+- ✓ Conversation state survives restarts and hours-long reply gaps — v2.0 (DB-backed FSM, idempotency, row lock, timeout reset)
+- ✓ Admin UI: list and view captured gastos (read-only, filter/search) — v2.0
+- ✓ Admin UI: list and view caja closings (read-only) — v2.0
 
-### Active (v2.0)
+### Active (next milestone)
 
-- [ ] Manager records a cash expense conversationally over WhatsApp
-- [ ] Bot collects required gasto fields through follow-up questions
-- [ ] Bot requests and stores a photo of the payment ticket
-- [ ] Bot proactively prompts each manager twice a day
-- [ ] Manager reports cash-on-hand for the twice-daily caja closing
-- [ ] Conversation state survives restarts and hours-long reply gaps
-- [ ] Admin UI: list and view captured gastos
-- [ ] Admin UI: list and view caja closings
+- [ ] Real twice-daily proactive scheduler (12:00/17:00 ART) + Twilio Utility template — production path (demo used the manual trigger endpoint)
+- [ ] Admin authentication (email/password) — required before exposing admin endpoints beyond the demo (deferred to v3)
+- [ ] Edit/delete gastos and cierres from the admin UI
+- [ ] Hardening: re-prompt guard when GPT extracts monto but not concepto (avoid silent save-path IntegrityError)
 
 ### Deferred / Not built
 
@@ -113,4 +117,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-27 — v1.0 MVP shipped; v2.0 Gastos Bot started*
+*Last updated: 2026-06-03 — v2.0 Gastos Bot shipped (4 phases, 12 plans, 184 backend tests passing). Deferred: real scheduler + Utility template, admin auth (v3), UI edit/delete, concepto-None hardening. Live Twilio + browser UAT pending manual run at demo time.*
