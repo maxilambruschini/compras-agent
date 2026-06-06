@@ -96,6 +96,7 @@ Key decisions affecting v2.0 work:
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260513-kwb | Fix Phase 1 cleanup: uv, CR-01/02/03, WR-01/03/05, is_active server_default | 2026-05-13 | 88a784c | [260513-kwb](./quick/260513-kwb-fix-phase-1-cleanup-items-before-phase-2/) |
+| 260606-bvq | Fix admin UI CORS: stop leaking Docker proxy target (VITE_API_URL→API_PROXY_TARGET) into browser bundle | 2026-06-06 | f20fdb3 | [260606-bvq](./quick/260606-bvq-fix-admin-ui-cors-stop-leaking-docker-pr/) |
 
 ### Blockers/Concerns
 
