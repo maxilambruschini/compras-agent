@@ -10,6 +10,8 @@ Design rules (D-01, D-06, PITFALLS.md P32):
   Decimal(str(slots.monto)) after extraction.
 - D-01 minimal field set: concepto + monto only (no lugar/proveedor/entrada/category in v2.0).
 - DraftGasto.failure_count: int default 0 — tracks consecutive parse failures for CONV-06.
+- DraftGasto.ticket_declined: bool default False — True when manager replied 'sin ticket'
+  so _handle_awaiting_monto can route to CONFIRM instead of looping back to AWAITING_TICKET.
 - use_enum_values=True required for OpenAI Structured Outputs JSON Schema (mirrors ExtractedInvoice).
 """
 from __future__ import annotations
@@ -49,6 +51,8 @@ class DraftGasto(BaseModel):
 
     monto is Decimal here (converted from GastoSlots.monto by orchestrator).
     failure_count tracks consecutive unparseable replies for CONV-06 re-prompt logic.
+    ticket_declined: True when manager explicitly replied 'sin ticket' — used by
+    _handle_awaiting_monto to route to CONFIRM (not back to AWAITING_TICKET).
 
     D-01: No lugar/proveedor/entrada/category in v2.0 (deferred).
     """
@@ -59,6 +63,7 @@ class DraftGasto(BaseModel):
     monto: Optional[Decimal] = None          # converted from GastoSlots.monto after extraction
     ticket_image_path: Optional[str] = None  # populated in Phase 2
     failure_count: int = 0                   # consecutive parse failures (CONV-06)
+    ticket_declined: bool = False            # True after manager replies 'sin ticket' (GASTO-04)
 
 
 class DraftCierre(BaseModel):

@@ -1195,3 +1195,116 @@ async def test_awaiting_ticket_with_media_path_vision_unreadable_advances_to_awa
     assert refreshed_draft.monto is None, (
         "monto must NOT be set when vision is unreadable"
     )
+
+
+@pytest.mark.asyncio
+async def test_sin_ticket_flow_reaches_confirm(db_session: AsyncSession) -> None:
+    """Full path: idle → concepto → 'sin ticket' → amount → state == CONFIRM (GASTO-04 fix).
+
+    This is the regression test for the infinite loop bug:
+    Before the fix, _handle_awaiting_monto unconditionally set state=AWAITING_TICKET,
+    causing the bot to loop back and ask for a ticket photo after the manager already
+    declined with 'sin ticket'.
+
+    After the fix, ticket_declined=True on the draft routes monto success to CONFIRM.
+    """
+    # Seed: conversation already at AWAITING_MONTO with ticket_declined=True
+    # (simulates the state after idle → concepto → 'sin ticket')
+    draft = DraftGasto(concepto="productos de limpieza", ticket_declined=True)
+    conv = Conversation(
+        sender_phone=NORM_SENDER,
+        state="awaiting_monto",
+        draft_gasto=draft.model_dump_json(),
+        last_message_id="msg-sin-ticket",
+    )
+    db_session.add(conv)
+    await db_session.commit()
+
+    slot_service = AsyncMock()
+    # GPT returns the monto correctly
+    slot_service.extract = AsyncMock(
+        return_value=GastoSlots(concepto=None, monto=6000.0)
+    )
+    provider = AsyncMock()
+    orch = await _make_orchestrator(slot_service=slot_service, provider=provider)
+    session_factory = _make_session_factory(db_session)
+
+    await orch.handle_message(
+        session_factory=session_factory,
+        sender=NORM_SENDER,
+        text="6000",
+        message_id="msg-monto-after-sin-ticket",
+    )
+
+    await db_session.refresh(conv)
+    assert conv.state == "confirm", (
+        f"After 'sin ticket' path, monto reply must advance to confirm (not loop to awaiting_ticket), got '{conv.state}'"
+    )
+    refreshed_draft = DraftGasto.model_validate_json(conv.draft_gasto)
+    assert refreshed_draft.monto is not None, "draft.monto must be set after amount reply"
+    from decimal import Decimal
+    assert refreshed_draft.monto == Decimal("6000"), (
+        f"draft.monto must be 6000, got {refreshed_draft.monto!r}"
+    )
+    assert refreshed_draft.ticket_image_path is None, (
+        "ticket_image_path must remain None — manager declined ticket"
+    )
+
+    # Reply must be the confirm summary, not the ticket prompt
+    provider.send_message.assert_called_once()
+    reply = provider.send_message.call_args[0][1]
+    assert "confirmás" in reply.lower() or "confirma" in reply.lower(), (
+        f"Reply after sin-ticket+amount must be confirm summary, got: '{reply}'"
+    )
+    assert "ticket" not in reply.lower() or "sin ticket" in reply.lower(), (
+        f"Reply must not re-ask for ticket photo, got: '{reply}'"
+    )
+
+
+@pytest.mark.asyncio
+async def test_sin_ticket_flow_si_writes_gasto(db_session: AsyncSession) -> None:
+    """After sin-ticket flow reaches CONFIRM, replying 'sí' must write exactly one Gasto.
+
+    Verifies the confirm gate works end-to-end for the ticket_declined path.
+    """
+    draft = DraftGasto(
+        concepto="productos de limpieza",
+        monto=__import__("decimal").Decimal("6000"),
+        ticket_declined=True,
+        ticket_image_path=None,
+    )
+    conv = Conversation(
+        sender_phone=NORM_SENDER,
+        state="confirm",
+        draft_gasto=draft.model_dump_json(),
+        last_message_id="msg-confirm-prompt",
+    )
+    db_session.add(conv)
+    await db_session.commit()
+
+    gasto_service = __import__("unittest.mock", fromlist=["MagicMock"]).MagicMock()
+    gasto_service.save_gasto = __import__("unittest.mock", fromlist=["AsyncMock"]).AsyncMock(return_value=None)
+    provider = AsyncMock()
+    orch = await _make_orchestrator(gasto_service=gasto_service, provider=provider)
+    session_factory = _make_session_factory(db_session)
+
+    await orch.handle_message(
+        session_factory=session_factory,
+        sender=NORM_SENDER,
+        text="sí",
+        message_id="msg-si",
+    )
+
+    await db_session.refresh(conv)
+    assert conv.state == "idle", (
+        f"After 'sí' at confirm, state must return to idle, got '{conv.state}'"
+    )
+    gasto_service.save_gasto.assert_called_once(), (
+        "save_gasto must be called exactly once on confirmation"
+    )
+
+    provider.send_message.assert_called_once()
+    reply = provider.send_message.call_args[0][1]
+    assert "registrado" in reply.lower(), (
+        f"Confirmation reply must indicate gasto was registered, got: '{reply}'"
+    )

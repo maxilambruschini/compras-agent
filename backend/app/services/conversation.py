@@ -468,12 +468,18 @@ class ConversationOrchestrator:
             # Success — update draft and advance
             draft.monto = monto
             draft.failure_count = 0
-            conv.state = ConvState.AWAITING_TICKET
             self._save_draft(conv, draft)
-            return (
-                f"Anotado: ${draft.monto}. "
-                "¿Tenés foto del ticket? Si no, respondé *sin ticket*."
-            )
+            if draft.ticket_declined:
+                # Path B: manager already said 'sin ticket' — skip ticket step, go to confirm
+                conv.state = ConvState.CONFIRM
+                return self._confirm_summary(draft)
+            else:
+                # Path A: concepto-collection from idle, ticket not yet offered
+                conv.state = ConvState.AWAITING_TICKET
+                return (
+                    f"Anotado: ${draft.monto}. "
+                    "¿Tenés foto del ticket? Si no, respondé *sin ticket*."
+                )
         else:
             # Parse failure — increment failure counter
             draft.failure_count += 1
@@ -513,6 +519,7 @@ class ConversationOrchestrator:
         # Branch (a): 'sin ticket' — manager explicitly skips the ticket
         if text.strip().lower() == "sin ticket":
             draft.ticket_image_path = None
+            draft.ticket_declined = True
             conv.state = ConvState.AWAITING_MONTO
             self._save_draft(conv, draft)
             return "Entendido, sin ticket. ¿Cuánto fue el monto? (ej: 1500)"

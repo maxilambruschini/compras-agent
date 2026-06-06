@@ -117,7 +117,7 @@ def test_draft_gasto_monto_is_optional_decimal():
 def test_draft_gasto_no_extra_fields():
     """DraftGasto has no lugar/proveedor/entrada/category per D-01."""
     # Access model_fields on class (not instance) — Pydantic v2.11+ deprecates instance access
-    allowed = {"concepto", "monto", "ticket_image_path", "failure_count"}
+    allowed = {"concepto", "monto", "ticket_image_path", "failure_count", "ticket_declined"}
     assert set(DraftGasto.model_fields.keys()) == allowed
 
 
